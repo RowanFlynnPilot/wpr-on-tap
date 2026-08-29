@@ -156,6 +156,11 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(31, 36, 33, 0.09);
   }
   .card.hl { outline: 3px solid var(--teal); outline-offset: 2px; }
   .card.featured {
@@ -201,6 +206,16 @@
     font-size: 12px;
     color: var(--ink-soft);
   }
+  .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: 1px;
+    background: var(--line);
+  }
+  .dot.open { background: #4E9455; }
+  .dot.later { background: var(--srm-pale); }
   .blurb { font-size: 15px; color: var(--ink-soft); }
 
   /* Signature: the flight — flagship beers as taster chips */
@@ -270,12 +285,37 @@
     color: var(--ink-soft);
   }
 
+  /* Beer-mug map pins */
+  .beer-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(31, 36, 33, 0.25);
+  }
+  .beer-pin-featured {
+    background: var(--teal);
+    border-color: var(--teal-dark);
+    font-size: 17px;
+  }
+  .leaflet-popup-content { font-family: 'Public Sans', sans-serif; }
+  .leaflet-popup-content .pop-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
   @media (max-width: 640px) {
     .card.featured { grid-template-columns: 1fr; }
     #map { height: 300px; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
+    .card:hover { transform: none; }
   }
 </style>
 </head>
@@ -292,13 +332,13 @@
   <div id="banner"></div>
 
   <div class="filters" role="group" aria-label="Filter breweries">
-    <button class="chip" data-filter="openNow" aria-pressed="false">Open now</button>
-    <button class="chip" data-filter="food" aria-pressed="false">Serves food</button>
-    <button class="chip" data-filter="outdoor" aria-pressed="false">Outdoor seating</button>
-    <button class="chip" data-filter="dogFriendly" aria-pressed="false">Dog-friendly</button>
-    <button class="chip" data-filter="familyFriendly" aria-pressed="false">Family-friendly</button>
-    <button class="chip" data-filter="tours" aria-pressed="false">Tours</button>
-    <button class="chip" data-filter="liveMusic" aria-pressed="false">Live music</button>
+    <button class="chip" data-filter="openNow" aria-pressed="false">🍺 Open now</button>
+    <button class="chip" data-filter="food" aria-pressed="false">🍕 Serves food</button>
+    <button class="chip" data-filter="outdoor" aria-pressed="false">☀️ Outdoor seating</button>
+    <button class="chip" data-filter="dogFriendly" aria-pressed="false">🐶 Dog-friendly</button>
+    <button class="chip" data-filter="familyFriendly" aria-pressed="false">👪 Family-friendly</button>
+    <button class="chip" data-filter="tours" aria-pressed="false">🎟️ Tours</button>
+    <button class="chip" data-filter="liveMusic" aria-pressed="false">🎸 Live music</button>
     <span class="filter-count" id="count" aria-live="polite"></span>
   </div>
 
@@ -316,8 +356,6 @@
 <script>
 const SRM = { pale: "var(--srm-pale)", amber: "var(--srm-amber)", brown: "var(--srm-brown)", stout: "var(--srm-stout)" };
 const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
-const FOOD_LABEL = { kitchen: "Full kitchen", food_trucks: "Food trucks", none: null };
-
 const esc = s => String(s).replace(/[&<>"']/g, c =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -339,11 +377,13 @@ function hoursToday(b) {
   return b.hours[DAYS[(new Date().getDay() + 6) % 7]];
 }
 
+// Status dot + line: green = pouring right now, gold = opens later today, gray = closed/unknown.
 function todayLine(b) {
   const t = hoursToday(b);
-  if (t === null) return "Closed today";
-  if (!parseRange(t)) return "Hours TBD";
-  return `Open today · ${t}`;
+  if (t === null) return `<span class="dot"></span>Closed today`;
+  if (!parseRange(t)) return `<span class="dot"></span>Hours TBD`;
+  if (openNow(b)) return `<span class="dot open"></span>Open now · til ${t.split("–")[1]}`;
+  return `<span class="dot later"></span>Today ${t}`;
 }
 
 function openNow(b) {
@@ -366,12 +406,13 @@ function matches(b) {
 
 function tags(b) {
   const out = [];
-  if (FOOD_LABEL[b.food]) out.push(FOOD_LABEL[b.food]);
-  if (b.outdoor) out.push("Outdoor seating");
-  if (b.dogFriendly) out.push("Dog-friendly");
-  if (b.familyFriendly) out.push("Family-friendly");
-  if (b.tours) out.push("Tours");
-  if (b.liveMusic) out.push("Live music");
+  if (b.food === "kitchen") out.push("🍕 Full kitchen");
+  if (b.food === "food_trucks") out.push("🚚 Food trucks");
+  if (b.outdoor) out.push("☀️ Outdoor seating");
+  if (b.dogFriendly) out.push("🐶 Dog-friendly");
+  if (b.familyFriendly) out.push("👪 Family-friendly");
+  if (b.tours) out.push("🎟️ Tours");
+  if (b.liveMusic) out.push("🎸 Live music");
   return out;
 }
 
@@ -427,13 +468,18 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 function pin(b) {
   if (b.lat == null || b.lng == null) return null;
   const featured = b.tier === "featured";
-  return L.circleMarker([b.lat, b.lng], {
-    radius: featured ? 11 : 8,
-    color: featured ? "#2C6A62" : "#1F2421",
-    weight: 2,
-    fillColor: featured ? "#3A867C" : "#F6F2E9",
-    fillOpacity: 1
-  }).bindPopup(`<strong style="font-family:'Fraunces',serif;font-size:15px">${esc(b.name)}</strong><br>${esc(b.address)}`);
+  const size = featured ? 34 : 27;
+  const icon = L.divIcon({
+    className: "beer-pin" + (featured ? " beer-pin-featured" : ""),
+    html: "🍺",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -size / 2]
+  });
+  return L.marker([b.lat, b.lng], { icon, title: b.name }).bindPopup(
+    `<strong style="font-family:'Fraunces',serif;font-size:15px">${esc(b.name)}</strong><br>` +
+    `<span class="pop-meta">${todayLine(b)}</span><br>${esc(b.address)}`
+  );
 }
 
 let markers = [];
@@ -460,7 +506,7 @@ function render() {
 
   document.getElementById("grid").innerHTML = visible.length
     ? visible.map(cardHTML).join("")
-    : `<p class="empty">No breweries match those filters. Clear one to widen the search.</p>`;
+    : `<p class="empty"><span style="font-size:34px;display:block;margin-bottom:8px">🍻</span>No breweries match those filters. Clear one to widen the search.</p>`;
 
   document.getElementById("count").textContent = `${visible.length} of ${DATA.breweries.length}`;
   document.getElementById("list-label").textContent =
@@ -550,7 +596,7 @@ async function load() {
 
   if (draft) {
     document.getElementById("banner").innerHTML =
-      `<p class="draft-banner">Preview — draft data, not yet verified by the newsroom. Hours and details may be wrong.</p>`;
+      `<p class="draft-banner">🚧 Preview — draft data, not yet verified by the newsroom. Hours and details may be wrong.</p>`;
   }
 
   document.getElementById("updated").textContent =
