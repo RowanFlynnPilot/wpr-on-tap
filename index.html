@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Central Wisconsin On Tap — Wausau Pilot &amp; Review</title>
+<meta name="description" content="Every brewery worth the drive in central Wisconsin — taprooms, hours, flagships, food trucks, and what's happening this week. From Wausau Pilot & Review.">
+<meta property="og:title" content="Central Wisconsin On Tap">
+<meta property="og:description" content="Every brewery worth the drive, from Merrill to Amherst. Taprooms, flagships, food trucks, and what's happening this week.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wausau Pilot &amp; Review">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -68,6 +73,19 @@
     color: var(--ink-soft);
   }
   .sponsor-line strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- Draft-preview banner ---- */
+  .draft-banner {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: #7A5B14;
+    background: rgba(240, 192, 90, 0.22);
+    border: 1px solid rgba(160, 122, 30, 0.45);
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 18px;
+  }
 
   /* ---- Filters ---- */
   .filters {
@@ -139,6 +157,7 @@
     flex-direction: column;
     gap: 10px;
   }
+  .card.hl { outline: 3px solid var(--teal); outline-offset: 2px; }
   .card.featured {
     grid-column: 1 / -1;
     border: 2px solid var(--teal);
@@ -227,14 +246,14 @@
     padding-top: 1px;
   }
 
-  .card a {
+  .card .links { margin-top: auto; display: flex; gap: 16px; flex-wrap: wrap; }
+  .card .links a {
     color: var(--teal-dark);
     font-weight: 600;
     font-size: 14px;
     text-decoration: none;
-    margin-top: auto;
   }
-  .card a:hover { text-decoration: underline; }
+  .card .links a:hover { text-decoration: underline; }
 
   .empty {
     grid-column: 1 / -1;
@@ -270,20 +289,23 @@
     <p class="sponsor-line">Presented by <strong>[Title Sponsor]</strong> · Updated <span id="updated"></span></p>
   </header>
 
+  <div id="banner"></div>
+
   <div class="filters" role="group" aria-label="Filter breweries">
+    <button class="chip" data-filter="openNow" aria-pressed="false">Open now</button>
     <button class="chip" data-filter="food" aria-pressed="false">Serves food</button>
     <button class="chip" data-filter="outdoor" aria-pressed="false">Outdoor seating</button>
     <button class="chip" data-filter="dogFriendly" aria-pressed="false">Dog-friendly</button>
     <button class="chip" data-filter="familyFriendly" aria-pressed="false">Family-friendly</button>
     <button class="chip" data-filter="tours" aria-pressed="false">Tours</button>
     <button class="chip" data-filter="liveMusic" aria-pressed="false">Live music</button>
-    <span class="filter-count" id="count"></span>
+    <span class="filter-count" id="count" aria-live="polite"></span>
   </div>
 
   <div id="map" aria-label="Map of central Wisconsin breweries"></div>
 
   <p class="section-label" id="list-label"></p>
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid"><p class="empty">Loading breweries…</p></div>
 
   <footer>
     Listings are editorial and comprehensive — every brewery in our coverage area is included, free of charge. Featured placements are paid sponsorships and are labeled. Know a brewery we missed? <a href="mailto:editor@wausaupilotandreview.com" style="color:var(--teal-dark)">Tell us.</a>
@@ -292,143 +314,54 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-/* =========================================================
-   SAMPLE DATA — structure matches breweries.json exactly.
-   Hours, flagships, and blurbs below are PLACEHOLDERS for
-   layout review. Replace with curated data before launch.
-   ========================================================= */
-const DATA = {
-  updated: "2026-08-28",
-  breweries: [
-    {
-      id: "central-waters", name: "Central Waters Brewing Co.", tier: "featured",
-      city: "Amherst", county: "Portage",
-      address: "351 Allen St, Amherst, WI 54406", lat: 44.4508, lng: -89.2846,
-      hours: { mon: null, tue: null, wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: "12–6" },
-      food: "none", outdoor: true, dogFriendly: true, familyFriendly: true, tours: true, liveMusic: false,
-      flagships: [
-        { name: "Sample Pale", srm: "pale" },
-        { name: "Sample Amber", srm: "amber" },
-        { name: "Sample Stout", srm: "stout" }
-      ],
-      links: { website: "#" },
-      featured: {
-        photo: null,
-        blurb: "Placeholder sponsor copy — two or three sentences of approved text about the taproom, the solar array, the barrel program, whatever the brewery wants to lead with.",
-        events: [
-          { date: "2026-09-12", title: "Sample event — barrel release party" },
-          { date: "2026-09-19", title: "Sample event — live trivia" }
-        ]
-      }
-    },
-    {
-      id: "bull-falls", name: "Bull Falls Brewery", tier: "free",
-      city: "Wausau", county: "Marathon",
-      address: "901 E Thomas St, Wausau, WI 54403", lat: 44.9497, lng: -89.6146,
-      hours: { mon: null, tue: null, wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: null },
-      food: "food_trucks", outdoor: true, dogFriendly: false, familyFriendly: true, tours: true, liveMusic: true,
-      flagships: [ { name: "Sample Lager", srm: "pale" }, { name: "Sample Bock", srm: "brown" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "red-eye", name: "Red Eye Brewing Company", tier: "free",
-      city: "Wausau", county: "Marathon",
-      address: "612 Washington St, Wausau, WI 54403", lat: 44.9576, lng: -89.6275,
-      hours: { mon: "11–9", tue: "11–9", wed: "11–9", thu: "11–9", fri: "11–10", sat: "11–10", sun: null },
-      food: "kitchen", outdoor: true, dogFriendly: false, familyFriendly: true, tours: false, liveMusic: false,
-      flagships: [ { name: "Sample Wit", srm: "pale" }, { name: "Sample IPA", srm: "amber" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "mosinee-brewing", name: "Mosinee Brewing Company", tier: "free",
-      city: "Mosinee", county: "Marathon",
-      address: "401 4th St, Mosinee, WI 54455", lat: 44.7929, lng: -89.7032,
-      hours: { mon: null, tue: null, wed: "3–9", thu: "3–9", fri: "3–10", sat: "12–10", sun: "12–6" },
-      food: "food_trucks", outdoor: true, dogFriendly: true, familyFriendly: true, tours: false, liveMusic: true,
-      flagships: [ { name: "Sample Kölsch", srm: "pale" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "sawmill", name: "Sawmill Brewing Co.", tier: "free",
-      city: "Merrill", county: "Lincoln",
-      address: "1110 E Main St, Merrill, WI 54452", lat: 45.1856, lng: -89.6712,
-      hours: { mon: null, tue: "3–9", wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: "12–6" },
-      food: "food_trucks", outdoor: true, dogFriendly: true, familyFriendly: true, tours: false, liveMusic: true,
-      flagships: [ { name: "Sample Porter", srm: "stout" }, { name: "Sample Red", srm: "amber" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "whitewater-music-hall", name: "Whitewater Music Hall & Brewing", tier: "free",
-      city: "Wausau", county: "Marathon",
-      address: "130 1st St, Wausau, WI 54403", lat: 44.9629, lng: -89.6207,
-      hours: { mon: null, tue: null, wed: "4–10", thu: "4–10", fri: "4–11", sat: "12–11", sun: null },
-      food: "none", outdoor: true, dogFriendly: false, familyFriendly: false, tours: false, liveMusic: true,
-      flagships: [ { name: "Sample Hazy", srm: "pale" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "stoney-acres", name: "Stoney Acres Farm Brewery", tier: "free",
-      city: "Athens", county: "Marathon",
-      address: "7002 Rangeline Rd, Athens, WI 54411", lat: 45.0269, lng: -90.0796,
-      hours: { mon: null, tue: null, wed: null, thu: null, fri: "4–9", sat: "12–9", sun: "12–6" },
-      food: "kitchen", outdoor: true, dogFriendly: true, familyFriendly: true, tours: false, liveMusic: true,
-      flagships: [ { name: "Sample Farmhouse", srm: "pale" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "stevens-point-brewery", name: "Stevens Point Brewery", tier: "free",
-      city: "Stevens Point", county: "Portage",
-      address: "2617 Water St, Stevens Point, WI 54481", lat: 44.5133, lng: -89.5646,
-      hours: { mon: "11–6", tue: "11–6", wed: "11–6", thu: "11–8", fri: "11–8", sat: "11–8", sun: "11–5" },
-      food: "none", outdoor: true, dogFriendly: false, familyFriendly: true, tours: true, liveMusic: false,
-      flagships: [ { name: "Sample Special", srm: "pale" }, { name: "Sample Bock", srm: "brown" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "oso", name: "O'so Brewing Company", tier: "free",
-      city: "Plover", county: "Portage",
-      address: "3028 Village Park Dr, Plover, WI 54467", lat: 44.4586, lng: -89.5443,
-      hours: { mon: null, tue: "3–9", wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: "12–6" },
-      food: "none", outdoor: true, dogFriendly: true, familyFriendly: true, tours: true, liveMusic: true,
-      flagships: [ { name: "Sample Sour", srm: "amber" } ],
-      links: { website: "#" }, featured: null
-    },
-    {
-      id: "district-1", name: "District 1 Brewing Company", tier: "free",
-      city: "Stevens Point", county: "Portage",
-      address: "200 Division St N, Stevens Point, WI 54481", lat: 44.5258, lng: -89.5568,
-      hours: { mon: null, tue: null, wed: "3–10", thu: "3–10", fri: "3–11", sat: "12–11", sun: "12–7" },
-      food: "none", outdoor: false, dogFriendly: false, familyFriendly: false, tours: false, liveMusic: true,
-      flagships: [ { name: "Sample Pils", srm: "pale" } ],
-      links: { website: "#" }, featured: null
-    }
-  ]
-};
-
 const SRM = { pale: "var(--srm-pale)", amber: "var(--srm-amber)", brown: "var(--srm-brown)", stout: "var(--srm-stout)" };
 const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
 const FOOD_LABEL = { kitchen: "Full kitchen", food_trucks: "Food trucks", none: null };
 
-// Fail fast: every brewery must declare all seven days. Missing = curation bug.
-for (const b of DATA.breweries) {
-  for (const d of DAYS) {
-    if (!(d in b.hours)) throw new Error(`Brewery "${b.id}" missing hours key "${d}"`);
-  }
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+let DATA = null;
+const activeFilters = new Set();
+
+// "3–10" / "11–11" / "4–8:30" → [open, close] as 24h decimal hours, or null if unparseable.
+// Taproom convention: opening hours of 9–12 read as morning/noon, 1–8 as afternoon; closes are always pm.
+function parseRange(str) {
+  const m = /^(\d{1,2})(?::(\d{2}))?–(\d{1,2})(?::(\d{2}))?$/.exec(str);
+  if (!m) return null;
+  let open = +m[1] + (+m[2] || 0) / 60;
+  const close = +m[3] + (+m[4] || 0) / 60 + 12;
+  if (+m[1] <= 8) open += 12;
+  return [open, close];
 }
 
-const activeFilters = new Set();
+function hoursToday(b) {
+  return b.hours[DAYS[(new Date().getDay() + 6) % 7]];
+}
+
+function todayLine(b) {
+  const t = hoursToday(b);
+  if (t === null) return "Closed today";
+  if (!parseRange(t)) return "Hours TBD";
+  return `Open today · ${t}`;
+}
+
+function openNow(b) {
+  const t = hoursToday(b);
+  const r = t && parseRange(t);
+  if (!r) return false;
+  const now = new Date();
+  const h = now.getHours() + now.getMinutes() / 60;
+  return h >= r[0] && h < r[1];
+}
 
 function matches(b) {
   for (const f of activeFilters) {
     if (f === "food") { if (b.food === "none") return false; }
+    else if (f === "openNow") { if (!openNow(b)) return false; }
     else if (!b[f]) return false;
   }
   return true;
-}
-
-function hoursToday(b) {
-  const d = DAYS[(new Date().getDay() + 6) % 7];
-  return b.hours[d];
 }
 
 function tags(b) {
@@ -442,39 +375,46 @@ function tags(b) {
   return out;
 }
 
+function linksHTML(b) {
+  const out = [];
+  if (b.links && b.links.website) out.push(`<a href="${esc(b.links.website)}" target="_blank" rel="noopener">Visit website →</a>`);
+  if (b.links && b.links.untappdMenu) out.push(`<a href="${esc(b.links.untappdMenu)}" target="_blank" rel="noopener">Tap list →</a>`);
+  return out.length ? `<div class="links">${out.join("")}</div>` : "";
+}
+
 function cardHTML(b) {
-  const today = hoursToday(b);
-  const todayLine = today ? `Open today · ${today}` : "Closed today";
-  const flight = b.flagships.map(f =>
-    `<span class="taster" style="--pour:${SRM[f.srm]}">${f.name}</span>`
-  ).join("");
+  const flight = b.flagships.length
+    ? `<div class="flight">${b.flagships.map(f =>
+        `<span class="taster" style="--pour:${SRM[f.srm] || SRM.amber}">${esc(f.name)}</span>`).join("")}</div>`
+    : "";
   const tagHTML = tags(b).map(t => `<span class="tag">${t}</span>`).join("");
+  const meta = `${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}`;
 
   if (b.tier === "featured") {
-    const ev = b.featured.events.map(e =>
-      `<div class="ev"><time datetime="${e.date}">${new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</time><span>${e.title}</span></div>`
+    const ev = (b.featured.events || []).map(e =>
+      `<div class="ev"><time datetime="${esc(e.date)}">${new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</time><span>${esc(e.title)}</span></div>`
     ).join("");
-    return `<article class="card featured" data-id="${b.id}">
+    return `<article class="card featured" data-id="${esc(b.id)}">
       <span class="badge">Featured</span>
-      <div class="photo">${b.featured.photo ? `<img src="${b.featured.photo}" alt="${b.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">` : "photo"}</div>
+      <div class="photo">${b.featured.photo ? `<img src="${esc(b.featured.photo)}" alt="${esc(b.name)}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">` : "photo"}</div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <h3>${b.name}</h3>
-        <p class="meta">${b.city}, ${b.county} County · ${todayLine}</p>
-        <p class="blurb">${b.featured.blurb}</p>
-        <div class="flight">${flight}</div>
+        <h3>${esc(b.name)}</h3>
+        <p class="meta">${meta}</p>
+        <p class="blurb">${esc(b.featured.blurb)}</p>
+        ${flight}
         <div class="tags">${tagHTML}</div>
-        <div class="events">${ev}</div>
-        <a href="${b.links.website}">Visit website →</a>
+        ${ev ? `<div class="events">${ev}</div>` : ""}
+        ${linksHTML(b)}
       </div>
     </article>`;
   }
 
-  return `<article class="card" data-id="${b.id}">
-    <h3>${b.name}</h3>
-    <p class="meta">${b.city}, ${b.county} County · ${todayLine}</p>
-    <div class="flight">${flight}</div>
+  return `<article class="card" data-id="${esc(b.id)}">
+    <h3>${esc(b.name)}</h3>
+    <p class="meta">${meta}</p>
+    ${flight}
     <div class="tags">${tagHTML}</div>
-    <a href="${b.links.website}">Visit website →</a>
+    ${linksHTML(b)}
   </article>`;
 }
 
@@ -485,6 +425,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(map);
 
 function pin(b) {
+  if (b.lat == null || b.lng == null) return null;
   const featured = b.tier === "featured";
   return L.circleMarker([b.lat, b.lng], {
     radius: featured ? 11 : 8,
@@ -492,10 +433,26 @@ function pin(b) {
     weight: 2,
     fillColor: featured ? "#3A867C" : "#F6F2E9",
     fillOpacity: 1
-  }).bindPopup(`<strong style="font-family:'Fraunces',serif;font-size:15px">${b.name}</strong><br>${b.address}`);
+  }).bindPopup(`<strong style="font-family:'Fraunces',serif;font-size:15px">${esc(b.name)}</strong><br>${esc(b.address)}`);
 }
 
 let markers = [];
+let lastBounds = null;
+
+function fitMap() {
+  map.invalidateSize();
+  if (lastBounds) map.fitBounds(lastBounds.pad(0.15));
+  else map.setView([44.85, -89.62], 9);
+}
+
+// The map container can be 0×0 when the page first runs (hidden tab, lazy-rendered
+// iframe) — Leaflet then computes zoom 0. Re-fit once the container gains real size.
+let mapHadSize = false;
+new ResizeObserver(entries => {
+  const has = entries.some(e => e.contentRect.width > 0 && e.contentRect.height > 0);
+  if (has && !mapHadSize && DATA) fitMap();
+  mapHadSize = has;
+}).observe(document.getElementById("map"));
 
 function render() {
   const visible = DATA.breweries.filter(matches)
@@ -510,10 +467,48 @@ function render() {
     activeFilters.size ? "Filtered results" : "All breweries";
 
   markers.forEach(m => map.removeLayer(m));
-  markers = visible.map(b => pin(b).addTo(map));
-  if (visible.length) {
-    map.fitBounds(L.latLngBounds(visible.map(b => [b.lat, b.lng])).pad(0.15));
+  markers = [];
+  const coords = [];
+  for (const b of visible) {
+    const p = pin(b);
+    if (p) { p.addTo(map); markers.push(p); coords.push([b.lat, b.lng]); }
   }
+  lastBounds = coords.length ? L.latLngBounds(coords) : null;
+  fitMap();
+}
+
+// ---- Deep links: ?f=dogFriendly,outdoor&brewery=bull-falls ----
+const VALID_FILTERS = new Set([...document.querySelectorAll(".chip")].map(c => c.dataset.filter));
+
+function applyURLState() {
+  const params = new URLSearchParams(location.search);
+  for (const f of (params.get("f") || "").split(",")) {
+    if (VALID_FILTERS.has(f)) {
+      activeFilters.add(f);
+      document.querySelector(`.chip[data-filter="${f}"]`).setAttribute("aria-pressed", "true");
+    }
+  }
+}
+
+function syncURL() {
+  const params = new URLSearchParams(location.search);
+  if (activeFilters.size) params.set("f", [...activeFilters].join(","));
+  else params.delete("f");
+  const q = params.toString();
+  history.replaceState(null, "", q ? `?${q}` : location.pathname);
+}
+
+function focusBrewery() {
+  const id = new URLSearchParams(location.search).get("brewery");
+  if (!id || !DATA) return;
+  const card = document.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
+  if (card) { card.classList.add("hl"); card.scrollIntoView({ block: "start" }); }
+  // markers[] parallels the visible, non-null-coordinate breweries in render order
+  const withCoords = DATA.breweries.filter(matches)
+    .sort((a, b) => (a.tier === b.tier) ? a.name.localeCompare(b.name) : (a.tier === "featured" ? -1 : 1))
+    .filter(b => b.lat != null);
+  const mi = withCoords.findIndex(b => b.id === id);
+  if (mi >= 0 && markers[mi]) markers[mi].openPopup();
 }
 
 document.querySelectorAll(".chip").forEach(chip => {
@@ -522,14 +517,55 @@ document.querySelectorAll(".chip").forEach(chip => {
     const on = activeFilters.has(f);
     if (on) activeFilters.delete(f); else activeFilters.add(f);
     chip.setAttribute("aria-pressed", String(!on));
+    syncURL();
     render();
   });
 });
 
-document.getElementById("updated").textContent =
-  new Date(DATA.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+// ---- Embed support: report height to the parent page (WordPress iframe pattern) ----
+if (window.parent !== window) {
+  const post = () => parent.postMessage(
+    { type: "wpr-embed-height", height: document.documentElement.scrollHeight }, "*");
+  new ResizeObserver(post).observe(document.body);
+}
 
-render();
+// ---- Load: breweries.json (validated) → breweries.draft.json (preview) → error ----
+async function load() {
+  let res = await fetch("breweries.json").catch(() => null);
+  let draft = false;
+  if (!res || !res.ok) {
+    res = await fetch("breweries.draft.json").catch(() => null);
+    draft = true;
+  }
+  if (!res || !res.ok) throw new Error("No data file reachable");
+
+  DATA = await res.json();
+
+  // Fail fast: every brewery must declare all seven days. Missing = curation bug.
+  for (const b of DATA.breweries) {
+    for (const d of DAYS) {
+      if (!(d in b.hours)) throw new Error(`Brewery "${b.id}" missing hours key "${d}"`);
+    }
+  }
+
+  if (draft) {
+    document.getElementById("banner").innerHTML =
+      `<p class="draft-banner">Preview — draft data, not yet verified by the newsroom. Hours and details may be wrong.</p>`;
+  }
+
+  document.getElementById("updated").textContent =
+    new Date(DATA.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  applyURLState();
+  render();
+  focusBrewery();
+}
+
+load().catch(err => {
+  console.error(err);
+  document.getElementById("grid").innerHTML =
+    `<p class="empty">Listings are temporarily unavailable. Please try again shortly, or <a href="mailto:editor@wausaupilotandreview.com" style="color:var(--teal-dark)">let us know</a> if this keeps happening.</p>`;
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,25 @@
+name: Validate brewery data
+
+on:
+  push:
+    paths: ["breweries*.json", "validate.js", ".github/workflows/validate.yml"]
+  pull_request:
+    paths: ["breweries*.json", "validate.js", ".github/workflows/validate.yml"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Validate draft (lenient)
+        run: node validate.js breweries.draft.json
+      - name: Validate published data (strict)
+        run: |
+          if [ -f breweries.json ]; then
+            node validate.js breweries.json
+          else
+            echo "breweries.json not promoted yet — skipping strict check"
+          fi
