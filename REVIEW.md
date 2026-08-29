@@ -27,7 +27,12 @@ Automated pass: 2026-08-28. Nothing goes live until each item below is checked.
 dogFriendly, familyFriendly, tours, and liveMusic were set conservatively (false unless a source affirmed). Every `false` is "unconfirmed," not "confirmed no" — except Bull Falls dogs (sign reported) and Red Eye/CW where sources were explicit. Worth a column-by-column pass.
 
 ## Geocoding
-- [ ] lat/lng carried over from prototype estimates for most entries; O'so, Up North, Little Italy are null. Batch-geocode all addresses once addresses are confirmed (Nominatim is fine at this volume).
+- [x] Batch pass done 2026-08-28 (Nominatim primary; Photon + US Census TIGER for the holdouts). All 11 entries now have coordinates. Confidence notes:
+  - High: red-eye, mosinee, central-waters, stevens-point resolved as actual OSM `brewery` POIs; bull-falls, sawmill, oso, little-italy as exact house numbers.
+  - **district-1 = 44.53253, -89.57572** — OSM brewery POI in the Northpoint Shopping Center at 200 N Division (explains "Ste G"). The old prototype pin was ~800 m south; corrected.
+  - **stoney-acres = 45.08447, -90.07912** — exact Census TIGER match on 245728 Baldwin Creek Rd, consistent with OSM's Baldwin Creek Road geometry (Town of Bern, ~6 km N of Athens village). Prototype pin was 6.4 km south (derived from the old Rangeline address). Sanity-check against their "1.5 mi north of Hwy 97 & County L" directions when confirming the address.
+  - **up-north = 44.21563, -89.80981** — street centroid of Matterhorn Trail (a straight ~680 m street in Alpine Village; #304 is within ~340 m). No house-level source exists in OSM or TIGER. Fine for the map; refine if a better source appears.
+  - **Up North county corrected Wood → Adams**: Matterhorn Trail is in the Town of Rome, Adams County — "Nekoosa" is only the mailing address. The coverage question is now "is the Town of Rome / Adams County in the circle?", and with 2 Doors Down (Wisconsin Rapids) closed, dropping Up North would mean no Wood *or* Adams entries at all.
 
 ## Sunset check
 - [ ] Confirm no other closures/openings since these sources' crawl dates — ask around the newsroom; locals know before the internet does.

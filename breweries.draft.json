@@ -9,9 +9,17 @@
       "city": "Wausau",
       "county": "Marathon",
       "address": "905 E Thomas St, Wausau, WI 54403",
-      "lat": 44.9497,
-      "lng": -89.6146,
-      "hours": { "mon": "3–10", "tue": "3–10", "wed": "3–10", "thu": "3–10", "fri": "11–11", "sat": "11–11", "sun": "11–8" },
+      "lat": 44.95133,
+      "lng": -89.61783,
+      "hours": {
+        "mon": "3–10",
+        "tue": "3–10",
+        "wed": "3–10",
+        "thu": "3–10",
+        "fri": "11–11",
+        "sat": "11–11",
+        "sun": "11–8"
+      },
       "food": "kitchen",
       "outdoor": true,
       "dogFriendly": false,
@@ -19,7 +27,9 @@
       "tours": false,
       "liveMusic": true,
       "flagships": [],
-      "links": { "website": "https://bullfallsbrewingco.com" },
+      "links": {
+        "website": "https://bullfallsbrewingco.com"
+      },
       "featured": null
     },
     {
@@ -29,9 +39,17 @@
       "city": "Wausau",
       "county": "Marathon",
       "address": "612 Washington St, Wausau, WI 54403",
-      "lat": 44.9576,
-      "lng": -89.6275,
-      "hours": { "mon": null, "tue": "11–9", "wed": "11–9", "thu": "11–9", "fri": "11–9", "sat": "11–9", "sun": null },
+      "lat": 44.95885,
+      "lng": -89.62284,
+      "hours": {
+        "mon": null,
+        "tue": "11–9",
+        "wed": "11–9",
+        "thu": "11–9",
+        "fri": "11–9",
+        "sat": "11–9",
+        "sun": null
+      },
       "food": "kitchen",
       "outdoor": true,
       "dogFriendly": false,
@@ -39,11 +57,25 @@
       "tours": false,
       "liveMusic": false,
       "flagships": [
-        { "name": "Bloom", "style": "Belgian Wheat", "srm": "pale" },
-        { "name": "Thrust!", "style": "Wisconsin IPA", "srm": "amber" },
-        { "name": "Scarlet 7", "style": "Belgian Dubbel", "srm": "brown" }
+        {
+          "name": "Bloom",
+          "style": "Belgian Wheat",
+          "srm": "pale"
+        },
+        {
+          "name": "Thrust!",
+          "style": "Wisconsin IPA",
+          "srm": "amber"
+        },
+        {
+          "name": "Scarlet 7",
+          "style": "Belgian Dubbel",
+          "srm": "brown"
+        }
       ],
-      "links": { "website": "https://redeyebrewing.com" },
+      "links": {
+        "website": "https://redeyebrewing.com"
+      },
       "featured": null
     },
     {
@@ -53,9 +85,17 @@
       "city": "Mosinee",
       "county": "Marathon",
       "address": "401 4th St, Mosinee, WI 54455",
-      "lat": 44.7929,
-      "lng": -89.7032,
-      "hours": { "mon": "4–9", "tue": "4–9", "wed": "4–10", "thu": "4–10", "fri": "2–10", "sat": "12–10", "sun": "12–7" },
+      "lat": 44.79295,
+      "lng": -89.70338,
+      "hours": {
+        "mon": "4–9",
+        "tue": "4–9",
+        "wed": "4–10",
+        "thu": "4–10",
+        "fri": "2–10",
+        "sat": "12–10",
+        "sun": "12–7"
+      },
       "food": "food_trucks",
       "outdoor": true,
       "dogFriendly": false,
@@ -63,10 +103,20 @@
       "tours": false,
       "liveMusic": true,
       "flagships": [
-        { "name": "Trolley Stout", "style": "Nitro Stout", "srm": "stout" },
-        { "name": "Kringle Brau", "style": "Specialty", "srm": "amber" }
+        {
+          "name": "Trolley Stout",
+          "style": "Nitro Stout",
+          "srm": "stout"
+        },
+        {
+          "name": "Kringle Brau",
+          "style": "Specialty",
+          "srm": "amber"
+        }
       ],
-      "links": { "website": "https://www.mosineebrewing.com" },
+      "links": {
+        "website": "https://www.mosineebrewing.com"
+      },
       "featured": null
     },
     {
@@ -76,9 +126,17 @@
       "city": "Merrill",
       "county": "Lincoln",
       "address": "1110 E 10th St, Merrill, WI 54452",
-      "lat": 45.1856,
-      "lng": -89.6712,
-      "hours": { "mon": "3–8", "tue": "3–8", "wed": "3–9", "thu": "3–10", "fri": "2–10", "sat": "12–10", "sun": "12–6" },
+      "lat": 45.18856,
+      "lng": -89.68335,
+      "hours": {
+        "mon": "3–8",
+        "tue": "3–8",
+        "wed": "3–9",
+        "thu": "3–10",
+        "fri": "2–10",
+        "sat": "12–10",
+        "sun": "12–6"
+      },
       "food": "food_trucks",
       "outdoor": true,
       "dogFriendly": false,
@@ -86,7 +144,9 @@
       "tours": false,
       "liveMusic": true,
       "flagships": [],
-      "links": { "website": "https://sawmillbrewing.net" },
+      "links": {
+        "website": "https://sawmillbrewing.net"
+      },
       "featured": null
     },
     {
@@ -96,9 +156,17 @@
       "city": "Athens",
       "county": "Marathon",
       "address": "245728 Baldwin Creek Rd, Athens, WI 54411",
-      "lat": 45.0269,
-      "lng": -90.0796,
-      "hours": { "mon": null, "tue": null, "wed": null, "thu": null, "fri": "4–8:30", "sat": "4–8:30", "sun": null },
+      "lat": 45.08447,
+      "lng": -90.07912,
+      "hours": {
+        "mon": null,
+        "tue": null,
+        "wed": null,
+        "thu": null,
+        "fri": "4–8:30",
+        "sat": "4–8:30",
+        "sun": null
+      },
       "food": "kitchen",
       "outdoor": true,
       "dogFriendly": false,
@@ -106,12 +174,30 @@
       "tours": false,
       "liveMusic": true,
       "flagships": [
-        { "name": "Athens Light", "style": "Light Lager", "srm": "pale" },
-        { "name": "Roll in the Hay", "style": "American IPA", "srm": "amber" },
-        { "name": "You-Double-You", "style": "Dry Stout", "srm": "stout" },
-        { "name": "Which Cider You On?", "style": "Cider", "srm": "pale" }
+        {
+          "name": "Athens Light",
+          "style": "Light Lager",
+          "srm": "pale"
+        },
+        {
+          "name": "Roll in the Hay",
+          "style": "American IPA",
+          "srm": "amber"
+        },
+        {
+          "name": "You-Double-You",
+          "style": "Dry Stout",
+          "srm": "stout"
+        },
+        {
+          "name": "Which Cider You On?",
+          "style": "Cider",
+          "srm": "pale"
+        }
       ],
-      "links": { "website": "https://stoneyacres.farm" },
+      "links": {
+        "website": "https://stoneyacres.farm"
+      },
       "featured": null
     },
     {
@@ -121,9 +207,17 @@
       "city": "Amherst",
       "county": "Portage",
       "address": "351 Allen St, Amherst, WI 54406",
-      "lat": 44.4508,
-      "lng": -89.2846,
-      "hours": { "mon": "9–5", "tue": "9–5", "wed": "9–7", "thu": "9–9", "fri": "9–9", "sat": "10–9", "sun": "12–7" },
+      "lat": 44.44219,
+      "lng": -89.27973,
+      "hours": {
+        "mon": "9–5",
+        "tue": "9–5",
+        "wed": "9–7",
+        "thu": "9–9",
+        "fri": "9–9",
+        "sat": "10–9",
+        "sun": "12–7"
+      },
       "food": "none",
       "outdoor": true,
       "dogFriendly": false,
@@ -131,13 +225,35 @@
       "tours": true,
       "liveMusic": false,
       "flagships": [
-        { "name": "Mudpuppy Porter", "style": "American Porter", "srm": "stout" },
-        { "name": "Honey Blonde Ale", "style": "Blonde Ale", "srm": "pale" },
-        { "name": "Rift IPA", "style": "IPA", "srm": "amber" },
-        { "name": "Ouisconsing Red Ale", "style": "Amber/Red", "srm": "amber" },
-        { "name": "Satin Solitude", "style": "Imperial Stout", "srm": "stout" }
+        {
+          "name": "Mudpuppy Porter",
+          "style": "American Porter",
+          "srm": "stout"
+        },
+        {
+          "name": "Honey Blonde Ale",
+          "style": "Blonde Ale",
+          "srm": "pale"
+        },
+        {
+          "name": "Rift IPA",
+          "style": "IPA",
+          "srm": "amber"
+        },
+        {
+          "name": "Ouisconsing Red Ale",
+          "style": "Amber/Red",
+          "srm": "amber"
+        },
+        {
+          "name": "Satin Solitude",
+          "style": "Imperial Stout",
+          "srm": "stout"
+        }
       ],
-      "links": { "website": "https://centralwaters.com" },
+      "links": {
+        "website": "https://centralwaters.com"
+      },
       "featured": null
     },
     {
@@ -147,9 +263,17 @@
       "city": "Stevens Point",
       "county": "Portage",
       "address": "2617 Water St, Stevens Point, WI 54481",
-      "lat": 44.5133,
-      "lng": -89.5646,
-      "hours": { "mon": "11–9", "tue": "11–9", "wed": "11–9", "thu": "11–9", "fri": "11–10", "sat": "11–10", "sun": "11–5" },
+      "lat": 44.51048,
+      "lng": -89.57366,
+      "hours": {
+        "mon": "11–9",
+        "tue": "11–9",
+        "wed": "11–9",
+        "thu": "11–9",
+        "fri": "11–10",
+        "sat": "11–10",
+        "sun": "11–5"
+      },
       "food": "none",
       "outdoor": true,
       "dogFriendly": false,
@@ -157,12 +281,30 @@
       "tours": true,
       "liveMusic": false,
       "flagships": [
-        { "name": "Point Special Lager", "style": "American Lager", "srm": "pale" },
-        { "name": "Green Circle Pale Ale", "style": "Pale Ale", "srm": "amber" },
-        { "name": "Midnight Black Lager", "style": "Black Lager", "srm": "stout" },
-        { "name": "Point Bock", "style": "Bock (seasonal)", "srm": "brown" }
+        {
+          "name": "Point Special Lager",
+          "style": "American Lager",
+          "srm": "pale"
+        },
+        {
+          "name": "Green Circle Pale Ale",
+          "style": "Pale Ale",
+          "srm": "amber"
+        },
+        {
+          "name": "Midnight Black Lager",
+          "style": "Black Lager",
+          "srm": "stout"
+        },
+        {
+          "name": "Point Bock",
+          "style": "Bock (seasonal)",
+          "srm": "brown"
+        }
       ],
-      "links": { "website": "https://www.pointbeer.com" },
+      "links": {
+        "website": "https://www.pointbeer.com"
+      },
       "featured": null
     },
     {
@@ -172,9 +314,17 @@
       "city": "Plover",
       "county": "Portage",
       "address": "1800 Plover Rd, Plover, WI 54467 (Artist and Fare Building)",
-      "lat": null,
-      "lng": null,
-      "hours": { "mon": null, "tue": "2–9", "wed": "11–9", "thu": "11–10", "fri": "11–11", "sat": "11–11", "sun": "11–7" },
+      "lat": 44.45373,
+      "lng": -89.52435,
+      "hours": {
+        "mon": null,
+        "tue": "2–9",
+        "wed": "11–9",
+        "thu": "11–10",
+        "fri": "11–11",
+        "sat": "11–11",
+        "sun": "11–7"
+      },
       "food": "kitchen",
       "outdoor": false,
       "dogFriendly": false,
@@ -182,7 +332,9 @@
       "tours": false,
       "liveMusic": true,
       "flagships": [],
-      "links": { "website": "https://www.osobrewing.com" },
+      "links": {
+        "website": "https://www.osobrewing.com"
+      },
       "featured": null
     },
     {
@@ -192,9 +344,17 @@
       "city": "Stevens Point",
       "county": "Portage",
       "address": "200 Division St N, Stevens Point, WI 54481",
-      "lat": 44.5258,
-      "lng": -89.5568,
-      "hours": { "mon": "11–10", "tue": "11–10", "wed": "11–10", "thu": "11–10", "fri": "11–11", "sat": "11–11", "sun": "11–8" },
+      "lat": 44.53253,
+      "lng": -89.57572,
+      "hours": {
+        "mon": "11–10",
+        "tue": "11–10",
+        "wed": "11–10",
+        "thu": "11–10",
+        "fri": "11–11",
+        "sat": "11–11",
+        "sun": "11–8"
+      },
       "food": "kitchen",
       "outdoor": false,
       "dogFriendly": false,
@@ -202,7 +362,9 @@
       "tours": false,
       "liveMusic": true,
       "flagships": [],
-      "links": { "website": "https://district1brewing.com" },
+      "links": {
+        "website": "https://district1brewing.com"
+      },
       "featured": null
     },
     {
@@ -212,9 +374,17 @@
       "city": "Wausau",
       "county": "Marathon",
       "address": "323 Jefferson St, Wausau, WI 54403",
-      "lat": null,
-      "lng": null,
-      "hours": { "mon": "TODO", "tue": "TODO", "wed": "TODO", "thu": "TODO", "fri": "TODO", "sat": "TODO", "sun": "TODO" },
+      "lat": 44.95969,
+      "lng": -89.62756,
+      "hours": {
+        "mon": "TODO",
+        "tue": "TODO",
+        "wed": "TODO",
+        "thu": "TODO",
+        "fri": "TODO",
+        "sat": "TODO",
+        "sun": "TODO"
+      },
       "food": "kitchen",
       "outdoor": false,
       "dogFriendly": false,
@@ -222,7 +392,9 @@
       "tours": false,
       "liveMusic": false,
       "flagships": [],
-      "links": { "website": null },
+      "links": {
+        "website": null
+      },
       "featured": null
     },
     {
@@ -230,11 +402,19 @@
       "name": "Up North Brewing Company",
       "tier": "free",
       "city": "Nekoosa",
-      "county": "Wood",
+      "county": "Adams",
       "address": "304 Matterhorn Tr, Nekoosa, WI 54457",
-      "lat": null,
-      "lng": null,
-      "hours": { "mon": null, "tue": null, "wed": "3–9", "thu": "3–9", "fri": "3–10", "sat": "11–10", "sun": "12–6" },
+      "lat": 44.21563,
+      "lng": -89.80981,
+      "hours": {
+        "mon": null,
+        "tue": null,
+        "wed": "3–9",
+        "thu": "3–9",
+        "fri": "3–10",
+        "sat": "11–10",
+        "sun": "12–6"
+      },
       "food": "none",
       "outdoor": true,
       "dogFriendly": true,
@@ -242,7 +422,9 @@
       "tours": false,
       "liveMusic": true,
       "flagships": [],
-      "links": { "website": null },
+      "links": {
+        "website": null
+      },
       "featured": null
     }
   ]
