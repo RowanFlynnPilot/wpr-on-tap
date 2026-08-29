@@ -275,8 +275,10 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    cursor: pointer;
     transition: transform 120ms ease, box-shadow 120ms ease;
   }
+  .card:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
   .card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(31, 36, 33, 0.09);
@@ -398,6 +400,114 @@
   }
 
   .hero + .wrap { padding-top: 20px; }
+
+  /* ---- Brewery detail modal ---- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(31, 36, 33, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 2000;
+  }
+  .modal-backdrop[hidden] { display: none; }
+  .modal {
+    background: var(--card);
+    border-radius: 14px;
+    max-width: 460px;
+    width: 100%;
+    max-height: min(86vh, 660px);
+    overflow-y: auto;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 18px 50px rgba(15, 25, 22, 0.35);
+    animation: modal-in 160ms ease-out;
+  }
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--ink-soft);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .modal-close:hover { border-color: var(--teal); color: var(--teal-dark); }
+  .modal-close:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .modal h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 1.15;
+    padding-right: 34px;
+  }
+  .modal .addr { font-size: 13.5px; color: var(--ink-soft); margin-top: 2px; }
+  .modal .flight, .modal .tags { margin-top: 12px; }
+  .hours-week {
+    margin-top: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .hours-week .hrow {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .hours-week .hrow + .hrow { border-top: 1px dashed var(--line); }
+  .hours-week .hrow.today {
+    background: rgba(58, 134, 124, 0.10);
+    color: var(--teal-dark);
+    font-weight: 600;
+  }
+  .modal .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .modal .actions a, .modal .actions button {
+    font-family: 'Public Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .modal .actions .primary {
+    background: var(--teal);
+    border: 1.5px solid var(--teal);
+    color: #FFFFFF;
+  }
+  .modal .actions .primary:hover { background: var(--teal-dark); }
+  .modal .actions .secondary {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    color: var(--teal-dark);
+  }
+  .modal .actions .secondary:hover { border-color: var(--teal); }
+  .modal .actions a:focus-visible, .modal .actions button:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .modal { animation: none; }
+  }
 
   footer {
     border-top: 1px solid var(--line);
@@ -550,6 +660,10 @@
   <p class="section-label" id="list-label"></p>
   <div class="grid" id="grid"><p class="empty">Loading breweries…</p></div>
 
+  <div class="modal-backdrop" id="modal-backdrop" hidden>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Brewery details"></div>
+  </div>
+
   <footer>
     <div class="foot-brand">
       <img src="wpr-typewriter-badge.png" alt="">
@@ -642,7 +756,7 @@ function cardHTML(b) {
     const ev = (b.featured.events || []).map(e =>
       `<div class="ev"><time datetime="${esc(e.date)}">${new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</time><span>${esc(e.title)}</span></div>`
     ).join("");
-    return `<article class="card featured" data-id="${esc(b.id)}">
+    return `<article class="card featured" data-id="${esc(b.id)}" tabindex="0">
       <span class="badge">Featured</span>
       <div class="photo">${b.featured.photo ? `<img src="${esc(b.featured.photo)}" alt="${esc(b.name)}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">` : "photo"}</div>
       <div style="display:flex;flex-direction:column;gap:10px">
@@ -657,7 +771,7 @@ function cardHTML(b) {
     </article>`;
   }
 
-  return `<article class="card" data-id="${esc(b.id)}">
+  return `<article class="card" data-id="${esc(b.id)}" tabindex="0">
     <h3>${esc(b.name)}</h3>
     <p class="meta">${meta}</p>
     ${flight}
@@ -835,14 +949,99 @@ function focusBrewery() {
   if (!id || !DATA) return;
   const card = document.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
   if (card) { card.classList.add("hl"); card.scrollIntoView({ block: "start" }); }
+  flyToBrewery(id);
+}
+
+function flyToBrewery(id) {
   const b = DATA.breweries.find(x => x.id === id && x.lat != null);
   if (!b) return;
   map.easeTo({ center: [b.lng, b.lat], zoom: 12, duration: 600 });
-  map.once("idle", () => {
+  // Not "idle": in a throttled/background tab the animation stalls and idle never
+  // fires; a timer still opens the popup, and the camera catches up on visibility.
+  setTimeout(() => {
+    renderMarkers();
     const m = markerObjs.find(m => m.__id === id);
     if (m && !m.getPopup().isOpen()) m.togglePopup();
-  });
+  }, 750);
 }
+
+// ---- Brewery detail modal ----
+const DAY_LABELS = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" };
+let modalReturnFocus = null;
+
+function openModal(b) {
+  const todayKey = DAYS[(new Date().getDay() + 6) % 7];
+  const week = DAYS.map(d => {
+    const v = b.hours[d];
+    const val = v === null ? "Closed" : (!parseRange(v) ? "TBD" : v);
+    return `<div class="hrow${d === todayKey ? " today" : ""}"><span>${DAY_LABELS[d]}</span><span>${esc(val)}</span></div>`;
+  }).join("");
+  const flight = b.flagships.length
+    ? `<div class="flight">${b.flagships.map(f =>
+        `<span class="taster" style="--pour:${SRM[f.srm] || SRM.amber}">${esc(f.name)}</span>`).join("")}</div>`
+    : "";
+  const tagHTML = tags(b).map(t => `<span class="tag">${t}</span>`).join("");
+  const dest = (b.lat != null) ? `${b.lat},${b.lng}` : b.address;
+  const actions = [
+    b.links && b.links.website ? `<a class="primary" href="${esc(b.links.website)}" target="_blank" rel="noopener">Website</a>` : "",
+    b.links && b.links.untappdMenu ? `<a class="secondary" href="${esc(b.links.untappdMenu)}" target="_blank" rel="noopener">Tap list</a>` : "",
+    `<a class="secondary" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}" target="_blank" rel="noopener">Directions</a>`,
+    (b.lat != null) ? `<button class="secondary" type="button" data-map="${esc(b.id)}">Show on map</button>` : ""
+  ].join("");
+
+  document.getElementById("modal").innerHTML = `
+    <button class="modal-close" type="button" aria-label="Close">✕</button>
+    <h3>${esc(b.name)}</h3>
+    <p class="meta">${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}</p>
+    <p class="addr">${esc(b.address)}</p>
+    ${flight}
+    <div class="tags">${tagHTML}</div>
+    <div class="hours-week">${week}</div>
+    <div class="actions">${actions}</div>`;
+  modalReturnFocus = document.activeElement;
+  const bd = document.getElementById("modal-backdrop");
+  bd.hidden = false;
+  document.body.style.overflow = "hidden";
+  document.querySelector(".modal-close").focus();
+}
+
+function closeModal() {
+  const bd = document.getElementById("modal-backdrop");
+  if (bd.hidden) return;
+  bd.hidden = true;
+  document.body.style.overflow = "";
+  if (modalReturnFocus) { modalReturnFocus.focus(); modalReturnFocus = null; }
+}
+
+document.getElementById("modal-backdrop").addEventListener("click", e => {
+  if (e.target.id === "modal-backdrop" || e.target.closest(".modal-close")) closeModal();
+  const mapBtn = e.target.closest("[data-map]");
+  if (mapBtn) {
+    const id = mapBtn.dataset.map;
+    closeModal();
+    document.getElementById("map").scrollIntoView({ behavior: "smooth", block: "center" });
+    // Closing the modal restores the scrollbar, which resizes the map and would
+    // cancel an in-flight easeTo — wait a beat before flying.
+    setTimeout(() => flyToBrewery(id), 120);
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+
+const grid = document.getElementById("grid");
+function cardActivate(e) {
+  if (e.target.closest("a")) return;
+  const card = e.target.closest(".card");
+  if (!card) return;
+  const b = DATA && DATA.breweries.find(x => x.id === card.dataset.id);
+  if (b) openModal(b);
+}
+grid.addEventListener("click", cardActivate);
+grid.addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("card")) {
+    e.preventDefault();
+    cardActivate(e);
+  }
+});
 
 document.querySelectorAll(".chip").forEach(chip => {
   chip.addEventListener("click", () => {
