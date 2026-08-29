@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Wausau Pilot &amp; Review">
 <link rel="icon" href="https://wausaupilotandreview.com/wp-content/uploads/2024/04/cropped-Wausau-Pilot-Transparent-192x192.png">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -419,25 +419,46 @@
   .foot-brand a { color: var(--ink); font-weight: 600; text-decoration: none; }
   .foot-brand a:hover { text-decoration: underline; }
 
-  /* Beer-mug map pins */
-  .beer-pin {
+  /* Teardrop beer pins + clusters (MapLibre markers) */
+  .pin-wrap { cursor: pointer; }
+  .pin {
+    width: 30px;
+    height: 30px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    background: var(--srm-amber);
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 6px rgba(31, 36, 33, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--card);
-    border: 2px solid var(--ink);
+  }
+  .pin span { transform: rotate(45deg); font-size: 14px; line-height: 1; }
+  .pin-featured { width: 38px; height: 38px; background: var(--teal); }
+  .pin-featured span { font-size: 18px; }
+  .cluster {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    font-size: 14px;
-    line-height: 1;
-    box-shadow: 0 2px 6px rgba(31, 36, 33, 0.25);
+    background: var(--teal-dark);
+    color: #FFFFFF;
+    border: 2px solid #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: 0 2px 6px rgba(31, 36, 33, 0.35);
+    cursor: pointer;
   }
-  .beer-pin-featured {
-    background: var(--teal);
-    border-color: var(--teal-dark);
-    font-size: 17px;
+  .maplibregl-popup-content {
+    font-family: 'Public Sans', sans-serif;
+    border-radius: 8px;
+    padding: 10px 14px;
+    box-shadow: 0 4px 14px rgba(31, 36, 33, 0.18);
   }
-  .leaflet-popup-content { font-family: 'Public Sans', sans-serif; }
-  .leaflet-popup-content .pop-meta {
+  .maplibregl-popup-content .pop-meta {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     color: var(--ink-soft);
@@ -538,7 +559,7 @@
   </footer>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.min.js"></script>
 <script>
 const SRM = { pale: "var(--srm-pale)", amber: "var(--srm-amber)", brown: "var(--srm-brown)", stout: "var(--srm-stout)" };
 const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
@@ -645,40 +666,122 @@ function cardHTML(b) {
   </article>`;
 }
 
-// ---- Map ----
-const map = L.map("map", { scrollWheelZoom: false });
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+// ---- Map: MapLibre GL + OpenFreeMap vector tiles, hand-styled to the WPR palette ----
+const MAP_STYLE = {
+  version: 8,
+  glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+  sources: { omt: { type: "vector", url: "https://tiles.openfreemap.org/planet" } },
+  layers: [
+    { id: "bg", type: "background", paint: { "background-color": "#F1EADA" } },
+    { id: "wood", type: "fill", source: "omt", "source-layer": "landcover",
+      filter: ["in", ["get", "class"], ["literal", ["wood", "forest"]]],
+      paint: { "fill-color": "#D3DEC1", "fill-opacity": 0.8 } },
+    { id: "grass", type: "fill", source: "omt", "source-layer": "landcover",
+      filter: ["in", ["get", "class"], ["literal", ["grass", "farmland", "meadow", "wetland"]]],
+      paint: { "fill-color": "#E3E7CD", "fill-opacity": 0.6 } },
+    { id: "park", type: "fill", source: "omt", "source-layer": "park",
+      paint: { "fill-color": "#CCDBB8", "fill-opacity": 0.7 } },
+    { id: "residential", type: "fill", source: "omt", "source-layer": "landuse",
+      filter: ["in", ["get", "class"], ["literal", ["residential", "suburb", "neighbourhood"]]],
+      paint: { "fill-color": "#EBE2CE", "fill-opacity": 0.55 } },
+    { id: "water", type: "fill", source: "omt", "source-layer": "water",
+      paint: { "fill-color": "#A5C8C0" } },
+    { id: "waterway", type: "line", source: "omt", "source-layer": "waterway",
+      paint: { "line-color": "#A5C8C0",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.6, 13, 2.5] } },
+    { id: "minor-roads", type: "line", source: "omt", "source-layer": "transportation", minzoom: 10,
+      filter: ["in", ["get", "class"], ["literal", ["minor", "service"]]],
+      paint: { "line-color": "#E7DDC4",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.5, 15, 3] } },
+    { id: "mid-roads", type: "line", source: "omt", "source-layer": "transportation",
+      filter: ["in", ["get", "class"], ["literal", ["secondary", "tertiary"]]],
+      paint: { "line-color": "#EBD9A6",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.7, 14, 4] } },
+    { id: "main-roads", type: "line", source: "omt", "source-layer": "transportation",
+      filter: ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary"]]],
+      paint: { "line-color": "#E5B963",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 7, 1.1, 14, 5.5] } },
+    { id: "boundary", type: "line", source: "omt", "source-layer": "boundary",
+      filter: ["all", ["<=", ["get", "admin_level"], 6], ["!=", ["get", "maritime"], 1]],
+      paint: { "line-color": "#C8BEA6", "line-width": 1, "line-dasharray": [3, 2] } },
+    { id: "city-labels", type: "symbol", source: "omt", "source-layer": "place",
+      filter: ["in", ["get", "class"], ["literal", ["city", "town"]]],
+      layout: { "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"],
+        "text-size": ["match", ["get", "class"], "city", 14, 12.5] },
+      paint: { "text-color": "#41493F", "text-halo-color": "#F1EADA", "text-halo-width": 1.3 } },
+    { id: "village-labels", type: "symbol", source: "omt", "source-layer": "place", minzoom: 9.5,
+      filter: ["==", ["get", "class"], "village"],
+      layout: { "text-field": ["get", "name"], "text-font": ["Noto Sans Regular"], "text-size": 10.5 },
+      paint: { "text-color": "#5A6157", "text-halo-color": "#F1EADA", "text-halo-width": 1.2 } }
+  ]
+};
 
-function pin(b) {
-  if (b.lat == null || b.lng == null) return null;
-  const featured = b.tier === "featured";
-  const size = featured ? 34 : 27;
-  const icon = L.divIcon({
-    className: "beer-pin" + (featured ? " beer-pin-featured" : ""),
-    html: "🍺",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-    popupAnchor: [0, -size / 2]
-  });
-  return L.marker([b.lat, b.lng], { icon, title: b.name }).bindPopup(
-    `<strong style="font-family:'Fraunces',serif;font-size:15px">${esc(b.name)}</strong><br>` +
-    `<span class="pop-meta">${todayLine(b)}</span><br>${esc(b.address)}`
-  );
-}
+const map = new maplibregl.Map({
+  container: "map",
+  style: MAP_STYLE,
+  center: [-89.62, 44.85],
+  zoom: 7.4,
+  cooperativeGestures: true,
+  attributionControl: { compact: true }
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
 
-let markers = [];
+let markerObjs = [];
+let mapList = [];
 let lastBounds = null;
 
+function popupHTML(b) {
+  return `<strong style="font-family:'Fraunces',serif;font-size:15px">${esc(b.name)}</strong><br>` +
+    `<span class="pop-meta">${todayLine(b)}</span><br>${esc(b.address)}`;
+}
+
+function singleMarker(b) {
+  const el = document.createElement("div");
+  el.className = "pin-wrap";
+  el.innerHTML = `<div class="pin${b.tier === "featured" ? " pin-featured" : ""}"><span>🍺</span></div>`;
+  const m = new maplibregl.Marker({ element: el, anchor: "bottom" })
+    .setLngLat([b.lng, b.lat])
+    .setPopup(new maplibregl.Popup({ offset: 32, closeButton: false }).setHTML(popupHTML(b)))
+    .addTo(map);
+  m.__id = b.id;
+  return m;
+}
+
+function clusterMarker(c) {
+  const el = document.createElement("div");
+  el.className = "cluster";
+  el.textContent = c.items.length;
+  const lng = c.items.reduce((s, b) => s + b.lng, 0) / c.items.length;
+  const lat = c.items.reduce((s, b) => s + b.lat, 0) / c.items.length;
+  el.addEventListener("click", () => map.easeTo({ center: [lng, lat], zoom: map.getZoom() + 2.2 }));
+  return new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+}
+
+// Group pins that would overlap at the current zoom into numbered clusters.
+function renderMarkers() {
+  markerObjs.forEach(m => m.remove());
+  markerObjs = [];
+  const clusters = [];
+  for (const b of mapList) {
+    const p = map.project([b.lng, b.lat]);
+    const hit = clusters.find(c => Math.hypot(c.x - p.x, c.y - p.y) < 40);
+    if (hit) hit.items.push(b); else clusters.push({ x: p.x, y: p.y, items: [b] });
+  }
+  for (const c of clusters) {
+    markerObjs.push(c.items.length === 1 ? singleMarker(c.items[0]) : clusterMarker(c));
+  }
+}
+map.on("zoomend", renderMarkers);
+
 function fitMap() {
-  map.invalidateSize();
-  if (lastBounds) map.fitBounds(lastBounds.pad(0.15));
-  else map.setView([44.85, -89.62], 9);
+  map.resize();
+  if (lastBounds) map.fitBounds(lastBounds, { padding: 55, maxZoom: 11.5, duration: 0 });
+  else map.jumpTo({ center: [-89.62, 44.85], zoom: 7.4 });
+  renderMarkers();
 }
 
 // The map container can be 0×0 when the page first runs (hidden tab, lazy-rendered
-// iframe) — Leaflet then computes zoom 0. Re-fit once the container gains real size.
+// iframe) — re-fit once the container gains real size.
 let mapHadSize = false;
 new ResizeObserver(entries => {
   const has = entries.some(e => e.contentRect.width > 0 && e.contentRect.height > 0);
@@ -698,14 +801,11 @@ function render() {
   document.getElementById("list-label").textContent =
     activeFilters.size ? "Filtered results" : "All breweries";
 
-  markers.forEach(m => map.removeLayer(m));
-  markers = [];
-  const coords = [];
-  for (const b of visible) {
-    const p = pin(b);
-    if (p) { p.addTo(map); markers.push(p); coords.push([b.lat, b.lng]); }
-  }
-  lastBounds = coords.length ? L.latLngBounds(coords) : null;
+  mapList = visible.filter(b => b.lat != null && b.lng != null);
+  lastBounds = mapList.length
+    ? mapList.reduce((bb, b) => bb.extend([b.lng, b.lat]),
+        new maplibregl.LngLatBounds([mapList[0].lng, mapList[0].lat], [mapList[0].lng, mapList[0].lat]))
+    : null;
   fitMap();
 }
 
@@ -735,12 +835,13 @@ function focusBrewery() {
   if (!id || !DATA) return;
   const card = document.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
   if (card) { card.classList.add("hl"); card.scrollIntoView({ block: "start" }); }
-  // markers[] parallels the visible, non-null-coordinate breweries in render order
-  const withCoords = DATA.breweries.filter(matches)
-    .sort((a, b) => (a.tier === b.tier) ? a.name.localeCompare(b.name) : (a.tier === "featured" ? -1 : 1))
-    .filter(b => b.lat != null);
-  const mi = withCoords.findIndex(b => b.id === id);
-  if (mi >= 0 && markers[mi]) markers[mi].openPopup();
+  const b = DATA.breweries.find(x => x.id === id && x.lat != null);
+  if (!b) return;
+  map.easeTo({ center: [b.lng, b.lat], zoom: 12, duration: 600 });
+  map.once("idle", () => {
+    const m = markerObjs.find(m => m.__id === id);
+    if (m && !m.getPopup().isOpen()) m.togglePopup();
+  });
 }
 
 document.querySelectorAll(".chip").forEach(chip => {
