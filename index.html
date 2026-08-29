@@ -9,6 +9,12 @@
 <meta property="og:description" content="Every brewery and distillery worth the drive, from Medford to Minocqua. Taprooms, tasting rooms, flagships, and what's happening this week.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Wausau Pilot &amp; Review">
+<meta property="og:url" content="https://rowanflynnpilot.github.io/wpr-on-tap/">
+<meta property="og:image" content="https://rowanflynnpilot.github.io/wpr-on-tap/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rowanflynnpilot.github.io/wpr-on-tap/og-card.png">
 <link rel="icon" href="https://wausaupilotandreview.com/wp-content/uploads/2024/04/cropped-Wausau-Pilot-Transparent-192x192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -580,6 +586,44 @@
     font-size: 11px;
     color: var(--ink-soft);
   }
+  .maplibregl-popup-content .pop-more {
+    display: inline-block;
+    margin-top: 5px;
+    color: var(--teal-dark);
+    font-weight: 700;
+    font-size: 12.5px;
+    text-decoration: none;
+  }
+  .maplibregl-popup-content .pop-more:hover { text-decoration: underline; }
+  .map-legend {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 5;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 5px 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    pointer-events: none;
+  }
+  .map-legend .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    margin-right: 5px;
+    vertical-align: -1px;
+  }
+  .map-legend .sw-brewery { background: var(--srm-amber); }
+  .map-legend .sw-distillery { background: var(--srm-brown); }
+  .map-legend .sw-cluster { border-radius: 50%; background: var(--teal-dark); transform: none; }
 
   @media (max-width: 640px) {
     .card.featured { grid-template-columns: 1fr; }
@@ -855,14 +899,34 @@ const map = new maplibregl.Map({
 });
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
 
+const MOTION_MS = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 600;
+
+const legend = document.createElement("div");
+legend.className = "map-legend";
+legend.innerHTML =
+  `<span><i class="swatch sw-brewery"></i>Brewery</span>` +
+  `<span><i class="swatch sw-distillery"></i>Distillery</span>` +
+  `<span><i class="swatch sw-cluster"></i>Several — tap to zoom</span>`;
+map.getContainer().appendChild(legend);
+
 let markerObjs = [];
 let mapList = [];
 let lastBounds = null;
 
 function popupHTML(b) {
   return `<strong style="font-family:'Fraunces',serif;font-size:15px">${esc(b.name)}</strong><br>` +
-    `<span class="pop-meta">${todayLine(b)}</span><br>${esc(b.address)}`;
+    `<span class="pop-meta">${todayLine(b)}</span><br>${esc(b.address)}<br>` +
+    `<a href="#" class="pop-more" data-id="${esc(b.id)}">Details →</a>`;
 }
+
+document.getElementById("map").addEventListener("click", e => {
+  const a = e.target.closest(".pop-more");
+  if (a && DATA) {
+    e.preventDefault();
+    const b = DATA.breweries.find(x => x.id === a.dataset.id);
+    if (b) openModal(b);
+  }
+});
 
 function singleMarker(b) {
   const el = document.createElement("div");
@@ -883,7 +947,7 @@ function clusterMarker(c) {
   el.textContent = c.items.length;
   const lng = c.items.reduce((s, b) => s + b.lng, 0) / c.items.length;
   const lat = c.items.reduce((s, b) => s + b.lat, 0) / c.items.length;
-  el.addEventListener("click", () => map.easeTo({ center: [lng, lat], zoom: map.getZoom() + 2.2 }));
+  el.addEventListener("click", () => map.easeTo({ center: [lng, lat], zoom: map.getZoom() + 2.2, duration: MOTION_MS }));
   return new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
 }
 
@@ -982,7 +1046,7 @@ function focusBrewery() {
 function flyToBrewery(id) {
   const b = DATA.breweries.find(x => x.id === id && x.lat != null);
   if (!b) return;
-  map.easeTo({ center: [b.lng, b.lat], zoom: 12, duration: 600 });
+  map.easeTo({ center: [b.lng, b.lat], zoom: 12, duration: MOTION_MS });
   // Not "idle": in a throttled/background tab the animation stalls and idle never
   // fires; a timer still opens the popup, and the camera catches up on visibility.
   setTimeout(() => {
@@ -1052,7 +1116,17 @@ document.getElementById("modal-backdrop").addEventListener("click", e => {
     setTimeout(() => flyToBrewery(id), 120);
   }
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeModal();
+  // Keep Tab inside the open modal.
+  if (e.key === "Tab" && !document.getElementById("modal-backdrop").hidden) {
+    const f = [...document.getElementById("modal").querySelectorAll("button, a[href]")];
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+    else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+  }
+});
 
 const grid = document.getElementById("grid");
 function cardActivate(e) {

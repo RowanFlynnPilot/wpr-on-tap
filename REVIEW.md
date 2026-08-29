@@ -49,6 +49,12 @@ Marathon 4–5 breweries + 2 distilleries · Portage 4 + 1 · Oneida up to 3 + 1
 - [x] **All 8 clean finds integrated into the draft** with geocoded coordinates (Knowlton House via its OSM POI; Timekeeper matched the depot itself). Remaining collection: Northern Waters hours (all TODO — site doesn't publish; call 715-358-0172), Rocky Reef hours used own site (Mon–Sat 12–9, Sun 12–5 — a directory site claims longer evening hours, verify), Blue Heron/Lake 11 amenity attributes are conservative defaults.
 - [ ] Brews-on-site verification for Rhinelander + Minocqua (phone calls), like Little Italy — both still OUT of the draft pending that call.
 
+### Second completeness sweep 2026-08-28 — region is covered
+- [ ] **McZ's Brew Pub, Rosholt (Portage)** — the one remaining candidate. Family-friendly microbrewery w/ kitchen, shares a building with an art studio; Facebook active as of Feb 2025 but no address/hours published anywhere reliable and not in OSM. Needs a call before adding.
+- **Kozy Yak Brewery & Winery, Rosholt — CLOSED** (own Facebook: "We have closed our Brewery & Winery. Thanks for 10 great years."). Do not add from stale sources.
+- O'so **does** run Saturday tours per the Stevens Point Area CVB's Craft Collective page — draft flipped tours→true.
+- Cross-checked: the CVB's official Craft Collective roster (Central Waters, District 1, Great Northern, O'so, Point) is fully covered; Adams County has only Up North; Langlade still zero (Woodland Trail Beverage is a *winery* in Lakewood, Oconto Co.); no distilleries around Rhinelander/Tomahawk beyond ours; no breweries in Weston/Schofield/Rothschild.
+
 ## Attribute defaults needing eyes
 dogFriendly, familyFriendly, tours, and liveMusic were set conservatively (false unless a source affirmed). Every `false` is "unconfirmed," not "confirmed no" — except Bull Falls dogs (sign reported) and Red Eye/CW where sources were explicit. Worth a column-by-column pass.
 

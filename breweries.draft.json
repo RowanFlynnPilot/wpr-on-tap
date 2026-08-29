@@ -336,7 +336,7 @@
       "outdoor": false,
       "dogFriendly": false,
       "familyFriendly": true,
-      "tours": false,
+      "tours": true,
       "liveMusic": true,
       "flagships": [],
       "links": {
