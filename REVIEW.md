@@ -23,6 +23,32 @@ Automated pass: 2026-08-28. Nothing goes live until each item below is checked.
 - [ ] **Little Italy — RECOMMEND EXCLUDE pending phone call (715-849-2739) or walk-by (323 Jefferson St, by the Center for the Visual Arts).** Footprint is near-zero: no website, no published hours anywhere, zero reviews on Yelp/Foursquare/Restaurant Guru, and **no Untappd brewery entity** — if they brewed their own beer, Untappd check-ins would exist. Everything found says Italian restaurant with "Brewpub" in the name. Address filled in draft; entry stays TODO and should be dropped at promotion unless the call proves on-site brewing.
 - [ ] **O'so — hours collected from own site (primary, /the-taphouse page).** Mon closed, Tue 2–9, Wed 11–9, Thu 11–10, Fri–Sat 11–11, Sun 11–7 — note Tripadvisor's panel disagrees on three days (Thu/Fri/Sat/Sun), so aggregators are stale; site wins. Draft updated. Kitchen (pizza/sandwiches/apps via Amore), no carry-ins, beer + wine + spirits, music most weekends. Phone 715-254-2163. Geocode still needed (address confirmed: 1800 Plover Rd, Artist and Fare Building).
 
+## Expansion pass 2026-08-28 — ledger county spread
+Coverage target expanded to match the Cleanup Ledger's eight counties: **Marathon, Langlade, Lincoln, Oneida, Portage, Shawano, Taylor, Wood.** Browser sweep of every county for breweries AND distilleries. Hours below from own sites (primary) unless noted.
+
+### New breweries found (6)
+- [ ] **Blue Heron BrewPub** — 108 W 9th St, Marshfield (**Wood**), 715-389-1868. Mon closed, Tue–Sat 3–9:30, Sun closed. Real 10-bbl on-site system + brick-oven pizza kitchen; events venue upstairs in the Parkin Place building. The Wood County anchor now that 2 Doors Down is gone.
+- [ ] **Stubborn Brothers Brewery** — 220 S Main St, Shawano (**Shawano**), 715-201-0859. Site shows Sun–Tue 11–8; get the full week. Kitchen, tours, locally sourced malt/hops.
+- [ ] **Lake 11 Brewing** — 128 S Main St, Medford (**Taylor**). Mon–Tue closed, Wed–Fri 4–10, Sat 3–10, Sun 11–6. Small-batch taproom, hometown story (two Medford kids came home).
+- [ ] **Rocky Reef Brewing** — Woodruff (**Oneida**), address TBD. Mon–Sat 12–9, Sun 12–5. 20 taps, heavy live-music calendar; founded 2015.
+- [ ] **Rhinelander Brewing Co.** — 43 S Brown St, Rhinelander (**Oneida**), 715-550-2337. Yelp: Mon–Thu 11–7, Fri–Sat 11–8, Sun closed. **Brews-on-site test needed** (same as Little Italy): the modern taproom reads partly as retail/merch, and Rhinelander-brand beer is largely contract-brewed.
+- [ ] **Minocqua Brewing Co.** — 329 Front St, Minocqua (**Oneida**). Own site: daily 11–7, seasonal "through the end of September". **Two editorial calls in one**: they sold the brewpub post-Covid (beer brewed off-site; taproom is a rehabbed 1930s Texaco station), and the brand is overtly political. Inclusion decision above my pay grade — flagging, not recommending.
+
+### New distilleries found (4)
+- [ ] **Timekeeper Distillery** — 720 Grant St, Wausau (**Marathon**), 715-679-3777. Sun 1–7, Mon–Tue closed, Wed–Thu 4–10, Fri 4–11, Sat 2–11. Cocktail + food menus in the 1901 Milwaukee Road depot; second location in Ashwaubenon shows momentum.
+- [ ] **Knowlton House Distillery** — 204575 County Rd DB, Knowlton (**Marathon**, near Mosinee), 715-693-0099. Bar/bottle shop: Sun 9–5, Mon–Wed 11–5, Thu–Sat 11–9; restaurant runs separate hours (Sun brunch 9–5, Thu 4–9, Fri–Sat 11–9). Distills from **milk sugars** (TenHead Spirits) — the dairy-state angle is a feature story on its own.
+- [ ] **Great Northern Distilling** — 1011 Second St, Stevens Point (**Portage**), 715-544-6551. **Moved from Plover — aggregators are stale**, same trap as O'so. Bar: Mon 4–10, Tue–Thu 4–11, Fri 4–12, Sat 12–12, Sun closed. Sat tours 1:00/2:30/4:00, $15 w/ cocktail. Potato vodka from potatoes grown within two miles.
+- [ ] **Northern Waters Distillery** — 8136 US Hwy 51 S, Minocqua (**Oneida**), 715-358-0172. Hours TBD (Yelp: opens noon). Tasting room + cocktail menu, registered tours; grains from a Rhinelander farm, local cranberries/maple.
+
+### County scorecard after expansion
+Marathon 4–5 breweries + 2 distilleries · Portage 4 + 1 · Oneida up to 3 + 1 · Wood 1 · Shawano 1 · Taylor 1 · Lincoln 1 (Tomahawk checked: none) · **Langlade 0** — checked thoroughly; Antigo has no brewery or distillery. That absence is itself a story hook ("the one county you can't drink local in").
+
+### Decisions this creates
+- [ ] **Schema: add `type: "brewery" | "distillery"`** + a UI treatment (a "Distilleries" filter chip is the minimal version). Flagship chips work for spirits too (list core spirits; srm tones map loosely to spirit color). One JSON file stays.
+- [ ] **Up North is now outside the spread** — Adams County isn't one of the ledger's eight. Options: drop it, or keep as an explicit "just over the county line" exception (its mailing address is Nekoosa/Wood). Decide alongside the Wood coverage question.
+- [ ] Brews-on-site verification for Rhinelander + Minocqua (phone calls), like Little Italy.
+- [ ] Naming: "On Tap" still reads fine with distilleries; dek/eyebrow should say "breweries & distilleries" once they land.
+
 ## Attribute defaults needing eyes
 dogFriendly, familyFriendly, tours, and liveMusic were set conservatively (false unless a source affirmed). Every `false` is "unconfirmed," not "confirmed no" — except Bull Falls dogs (sign reported) and Red Eye/CW where sources were explicit. Worth a column-by-column pass.
 
