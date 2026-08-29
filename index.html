@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central Wisconsin On Tap — Wausau Pilot &amp; Review</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #3A867C;
+    --teal-dark: #2C6A62;
+    --cream: #F6F2E9;
+    --ink: #1F2421;
+    --ink-soft: #4A524D;
+    --line: #DDD5C4;
+    --card: #FFFFFF;
+    /* SRM-inspired beer tones for flight chips */
+    --srm-pale: #F0C05A;
+    --srm-amber: #C96E2B;
+    --srm-brown: #7A4419;
+    --srm-stout: #33200E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Public Sans', sans-serif;
+    line-height: 1.55;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---- Header ---- */
+  header { padding: 40px 0 20px; }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: clamp(34px, 6vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  h1 .tap-mark {
+    display: inline-block;
+    color: var(--teal);
+  }
+  .dek {
+    max-width: 620px;
+    margin-top: 12px;
+    color: var(--ink-soft);
+    font-size: 17px;
+  }
+  .sponsor-line {
+    margin-top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .sponsor-line strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- Filters ---- */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  .chip {
+    font-family: 'Public Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: border-color 120ms, background 120ms, color 120ms;
+  }
+  .chip:hover { border-color: var(--teal); color: var(--teal-dark); }
+  .chip:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .chip[aria-pressed="true"] {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+  }
+  .filter-count {
+    margin-left: auto;
+    align-self: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  /* ---- Map ---- */
+  #map {
+    height: 420px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 32px;
+    z-index: 0;
+  }
+
+  /* ---- Cards ---- */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+    margin-bottom: 48px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card.featured {
+    grid-column: 1 / -1;
+    border: 2px solid var(--teal);
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    position: relative;
+  }
+  .card.featured .photo {
+    background: linear-gradient(160deg, var(--teal) 0%, var(--teal-dark) 100%);
+    border-radius: 8px;
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.85);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .badge {
+    position: absolute;
+    top: -11px;
+    left: 20px;
+    background: var(--teal);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .card h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.15;
+  }
+  .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .blurb { font-size: 15px; color: var(--ink-soft); }
+
+  /* Signature: the flight — flagship beers as taster chips */
+  .flight { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .taster {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink);
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 3px 8px;
+  }
+  .taster::before {
+    content: "";
+    width: 9px; height: 12px;
+    border-radius: 2px 2px 4px 4px;
+    background: var(--pour, var(--srm-amber));
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--teal-dark);
+    background: rgba(58,134,124,0.10);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+
+  .events { border-top: 1px dashed var(--line); padding-top: 10px; }
+  .events .ev {
+    display: flex; gap: 10px; font-size: 14px; margin-bottom: 4px;
+  }
+  .events .ev time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--teal-dark);
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+
+  .card a {
+    color: var(--teal-dark);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    margin-top: auto;
+  }
+  .card a:hover { text-decoration: underline; }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 20px 0 40px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 640px) {
+    .card.featured { grid-template-columns: 1fr; }
+    #map { height: 300px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Wausau Pilot &amp; Review</p>
+    <h1>Central Wisconsin <span class="tap-mark">On Tap</span></h1>
+    <p class="dek">Every brewery worth the drive, from Merrill to Amherst. Taprooms, flagships, food trucks, and what's happening this week.</p>
+    <p class="sponsor-line">Presented by <strong>[Title Sponsor]</strong> · Updated <span id="updated"></span></p>
+  </header>
+
+  <div class="filters" role="group" aria-label="Filter breweries">
+    <button class="chip" data-filter="food" aria-pressed="false">Serves food</button>
+    <button class="chip" data-filter="outdoor" aria-pressed="false">Outdoor seating</button>
+    <button class="chip" data-filter="dogFriendly" aria-pressed="false">Dog-friendly</button>
+    <button class="chip" data-filter="familyFriendly" aria-pressed="false">Family-friendly</button>
+    <button class="chip" data-filter="tours" aria-pressed="false">Tours</button>
+    <button class="chip" data-filter="liveMusic" aria-pressed="false">Live music</button>
+    <span class="filter-count" id="count"></span>
+  </div>
+
+  <div id="map" aria-label="Map of central Wisconsin breweries"></div>
+
+  <p class="section-label" id="list-label"></p>
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Listings are editorial and comprehensive — every brewery in our coverage area is included, free of charge. Featured placements are paid sponsorships and are labeled. Know a brewery we missed? <a href="mailto:editor@wausaupilotandreview.com" style="color:var(--teal-dark)">Tell us.</a>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* =========================================================
+   SAMPLE DATA — structure matches breweries.json exactly.
+   Hours, flagships, and blurbs below are PLACEHOLDERS for
+   layout review. Replace with curated data before launch.
+   ========================================================= */
+const DATA = {
+  updated: "2026-08-28",
+  breweries: [
+    {
+      id: "central-waters", name: "Central Waters Brewing Co.", tier: "featured",
+      city: "Amherst", county: "Portage",
+      address: "351 Allen St, Amherst, WI 54406", lat: 44.4508, lng: -89.2846,
+      hours: { mon: null, tue: null, wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: "12–6" },
+      food: "none", outdoor: true, dogFriendly: true, familyFriendly: true, tours: true, liveMusic: false,
+      flagships: [
+        { name: "Sample Pale", srm: "pale" },
+        { name: "Sample Amber", srm: "amber" },
+        { name: "Sample Stout", srm: "stout" }
+      ],
+      links: { website: "#" },
+      featured: {
+        photo: null,
+        blurb: "Placeholder sponsor copy — two or three sentences of approved text about the taproom, the solar array, the barrel program, whatever the brewery wants to lead with.",
+        events: [
+          { date: "2026-09-12", title: "Sample event — barrel release party" },
+          { date: "2026-09-19", title: "Sample event — live trivia" }
+        ]
+      }
+    },
+    {
+      id: "bull-falls", name: "Bull Falls Brewery", tier: "free",
+      city: "Wausau", county: "Marathon",
+      address: "901 E Thomas St, Wausau, WI 54403", lat: 44.9497, lng: -89.6146,
+      hours: { mon: null, tue: null, wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: null },
+      food: "food_trucks", outdoor: true, dogFriendly: false, familyFriendly: true, tours: true, liveMusic: true,
+      flagships: [ { name: "Sample Lager", srm: "pale" }, { name: "Sample Bock", srm: "brown" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "red-eye", name: "Red Eye Brewing Company", tier: "free",
+      city: "Wausau", county: "Marathon",
+      address: "612 Washington St, Wausau, WI 54403", lat: 44.9576, lng: -89.6275,
+      hours: { mon: "11–9", tue: "11–9", wed: "11–9", thu: "11–9", fri: "11–10", sat: "11–10", sun: null },
+      food: "kitchen", outdoor: true, dogFriendly: false, familyFriendly: true, tours: false, liveMusic: false,
+      flagships: [ { name: "Sample Wit", srm: "pale" }, { name: "Sample IPA", srm: "amber" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "mosinee-brewing", name: "Mosinee Brewing Company", tier: "free",
+      city: "Mosinee", county: "Marathon",
+      address: "401 4th St, Mosinee, WI 54455", lat: 44.7929, lng: -89.7032,
+      hours: { mon: null, tue: null, wed: "3–9", thu: "3–9", fri: "3–10", sat: "12–10", sun: "12–6" },
+      food: "food_trucks", outdoor: true, dogFriendly: true, familyFriendly: true, tours: false, liveMusic: true,
+      flagships: [ { name: "Sample Kölsch", srm: "pale" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "sawmill", name: "Sawmill Brewing Co.", tier: "free",
+      city: "Merrill", county: "Lincoln",
+      address: "1110 E Main St, Merrill, WI 54452", lat: 45.1856, lng: -89.6712,
+      hours: { mon: null, tue: "3–9", wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: "12–6" },
+      food: "food_trucks", outdoor: true, dogFriendly: true, familyFriendly: true, tours: false, liveMusic: true,
+      flagships: [ { name: "Sample Porter", srm: "stout" }, { name: "Sample Red", srm: "amber" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "whitewater-music-hall", name: "Whitewater Music Hall & Brewing", tier: "free",
+      city: "Wausau", county: "Marathon",
+      address: "130 1st St, Wausau, WI 54403", lat: 44.9629, lng: -89.6207,
+      hours: { mon: null, tue: null, wed: "4–10", thu: "4–10", fri: "4–11", sat: "12–11", sun: null },
+      food: "none", outdoor: true, dogFriendly: false, familyFriendly: false, tours: false, liveMusic: true,
+      flagships: [ { name: "Sample Hazy", srm: "pale" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "stoney-acres", name: "Stoney Acres Farm Brewery", tier: "free",
+      city: "Athens", county: "Marathon",
+      address: "7002 Rangeline Rd, Athens, WI 54411", lat: 45.0269, lng: -90.0796,
+      hours: { mon: null, tue: null, wed: null, thu: null, fri: "4–9", sat: "12–9", sun: "12–6" },
+      food: "kitchen", outdoor: true, dogFriendly: true, familyFriendly: true, tours: false, liveMusic: true,
+      flagships: [ { name: "Sample Farmhouse", srm: "pale" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "stevens-point-brewery", name: "Stevens Point Brewery", tier: "free",
+      city: "Stevens Point", county: "Portage",
+      address: "2617 Water St, Stevens Point, WI 54481", lat: 44.5133, lng: -89.5646,
+      hours: { mon: "11–6", tue: "11–6", wed: "11–6", thu: "11–8", fri: "11–8", sat: "11–8", sun: "11–5" },
+      food: "none", outdoor: true, dogFriendly: false, familyFriendly: true, tours: true, liveMusic: false,
+      flagships: [ { name: "Sample Special", srm: "pale" }, { name: "Sample Bock", srm: "brown" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "oso", name: "O'so Brewing Company", tier: "free",
+      city: "Plover", county: "Portage",
+      address: "3028 Village Park Dr, Plover, WI 54467", lat: 44.4586, lng: -89.5443,
+      hours: { mon: null, tue: "3–9", wed: "3–9", thu: "3–9", fri: "12–10", sat: "12–10", sun: "12–6" },
+      food: "none", outdoor: true, dogFriendly: true, familyFriendly: true, tours: true, liveMusic: true,
+      flagships: [ { name: "Sample Sour", srm: "amber" } ],
+      links: { website: "#" }, featured: null
+    },
+    {
+      id: "district-1", name: "District 1 Brewing Company", tier: "free",
+      city: "Stevens Point", county: "Portage",
+      address: "200 Division St N, Stevens Point, WI 54481", lat: 44.5258, lng: -89.5568,
+      hours: { mon: null, tue: null, wed: "3–10", thu: "3–10", fri: "3–11", sat: "12–11", sun: "12–7" },
+      food: "none", outdoor: false, dogFriendly: false, familyFriendly: false, tours: false, liveMusic: true,
+      flagships: [ { name: "Sample Pils", srm: "pale" } ],
+      links: { website: "#" }, featured: null
+    }
+  ]
+};
+
+const SRM = { pale: "var(--srm-pale)", amber: "var(--srm-amber)", brown: "var(--srm-brown)", stout: "var(--srm-stout)" };
+const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
+const FOOD_LABEL = { kitchen: "Full kitchen", food_trucks: "Food trucks", none: null };
+
+// Fail fast: every brewery must declare all seven days. Missing = curation bug.
+for (const b of DATA.breweries) {
+  for (const d of DAYS) {
+    if (!(d in b.hours)) throw new Error(`Brewery "${b.id}" missing hours key "${d}"`);
+  }
+}
+
+const activeFilters = new Set();
+
+function matches(b) {
+  for (const f of activeFilters) {
+    if (f === "food") { if (b.food === "none") return false; }
+    else if (!b[f]) return false;
+  }
+  return true;
+}
+
+function hoursToday(b) {
+  const d = DAYS[(new Date().getDay() + 6) % 7];
+  return b.hours[d];
+}
+
+function tags(b) {
+  const out = [];
+  if (FOOD_LABEL[b.food]) out.push(FOOD_LABEL[b.food]);
+  if (b.outdoor) out.push("Outdoor seating");
+  if (b.dogFriendly) out.push("Dog-friendly");
+  if (b.familyFriendly) out.push("Family-friendly");
+  if (b.tours) out.push("Tours");
+  if (b.liveMusic) out.push("Live music");
+  return out;
+}
+
+function cardHTML(b) {
+  const today = hoursToday(b);
+  const todayLine = today ? `Open today · ${today}` : "Closed today";
+  const flight = b.flagships.map(f =>
+    `<span class="taster" style="--pour:${SRM[f.srm]}">${f.name}</span>`
+  ).join("");
+  const tagHTML = tags(b).map(t => `<span class="tag">${t}</span>`).join("");
+
+  if (b.tier === "featured") {
+    const ev = b.featured.events.map(e =>
+      `<div class="ev"><time datetime="${e.date}">${new Date(e.date + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</time><span>${e.title}</span></div>`
+    ).join("");
+    return `<article class="card featured" data-id="${b.id}">
+      <span class="badge">Featured</span>
+      <div class="photo">${b.featured.photo ? `<img src="${b.featured.photo}" alt="${b.name}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">` : "photo"}</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <h3>${b.name}</h3>
+        <p class="meta">${b.city}, ${b.county} County · ${todayLine}</p>
+        <p class="blurb">${b.featured.blurb}</p>
+        <div class="flight">${flight}</div>
+        <div class="tags">${tagHTML}</div>
+        <div class="events">${ev}</div>
+        <a href="${b.links.website}">Visit website →</a>
+      </div>
+    </article>`;
+  }
+
+  return `<article class="card" data-id="${b.id}">
+    <h3>${b.name}</h3>
+    <p class="meta">${b.city}, ${b.county} County · ${todayLine}</p>
+    <div class="flight">${flight}</div>
+    <div class="tags">${tagHTML}</div>
+    <a href="${b.links.website}">Visit website →</a>
+  </article>`;
+}
+
+// ---- Map ----
+const map = L.map("map", { scrollWheelZoom: false });
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+function pin(b) {
+  const featured = b.tier === "featured";
+  return L.circleMarker([b.lat, b.lng], {
+    radius: featured ? 11 : 8,
+    color: featured ? "#2C6A62" : "#1F2421",
+    weight: 2,
+    fillColor: featured ? "#3A867C" : "#F6F2E9",
+    fillOpacity: 1
+  }).bindPopup(`<strong style="font-family:'Fraunces',serif;font-size:15px">${b.name}</strong><br>${b.address}`);
+}
+
+let markers = [];
+
+function render() {
+  const visible = DATA.breweries.filter(matches)
+    .sort((a, b) => (a.tier === b.tier) ? a.name.localeCompare(b.name) : (a.tier === "featured" ? -1 : 1));
+
+  document.getElementById("grid").innerHTML = visible.length
+    ? visible.map(cardHTML).join("")
+    : `<p class="empty">No breweries match those filters. Clear one to widen the search.</p>`;
+
+  document.getElementById("count").textContent = `${visible.length} of ${DATA.breweries.length}`;
+  document.getElementById("list-label").textContent =
+    activeFilters.size ? "Filtered results" : "All breweries";
+
+  markers.forEach(m => map.removeLayer(m));
+  markers = visible.map(b => pin(b).addTo(map));
+  if (visible.length) {
+    map.fitBounds(L.latLngBounds(visible.map(b => [b.lat, b.lng])).pad(0.15));
+  }
+}
+
+document.querySelectorAll(".chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    const f = chip.dataset.filter;
+    const on = activeFilters.has(f);
+    if (on) activeFilters.delete(f); else activeFilters.add(f);
+    chip.setAttribute("aria-pressed", String(!on));
+    render();
+  });
+});
+
+document.getElementById("updated").textContent =
+  new Date(DATA.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+render();
+</script>
+</body>
+</html>
