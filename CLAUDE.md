@@ -1,8 +1,11 @@
 # wpr-on-tap — Central Wisconsin On Tap
 
-Brewery directory for Wausau Pilot & Review. Reader-facing tool + sponsor play
-(free comprehensive listings, paid featured tier, title sponsor slot).
-Same family as the Happy Hour Finder and Friday Fish Fry Finder.
+Brewery & distillery directory for Wausau Pilot & Review. Reader-facing tool +
+sponsor play (free comprehensive listings, paid featured tier, title sponsor
+slot). Same family as the Happy Hour Finder and Friday Fish Fry Finder.
+Coverage: nine counties — the Cleanup Ledger's eight (Marathon, Langlade,
+Lincoln, Oneida, Portage, Shawano, Taylor, Wood) plus Adams. The validator
+enforces the county list.
 
 ## Current state (handoff from claude.ai, 2026-08-28)
 - `index.html` — complete working v1: Leaflet map, AND-logic filter chips,
@@ -26,6 +29,8 @@ Same family as the Happy Hour Finder and Friday Fish Fry Finder.
 - One JSON file in repo, no Google Sheet CMS — quarterly cadence doesn't need one.
 - `featured` is null or complete; sponsorship lapse = set tier free + featured null.
 - `food` is enum kitchen|food_trucks|none, not boolean.
+- `type` is enum brewery|distillery (added 2026-08-28); one JSON file for both.
+  UI: All/Breweries/Distilleries toggle, `?type=` deep link, 🥃 brown pins.
 - Hours: null = closed; missing key = curation bug = throw.
 - `id` slugs are permanent (future passport/check-in feature joins on them).
 - No tap-list ingestion. Link out via `untappdMenu` field (add when curating).

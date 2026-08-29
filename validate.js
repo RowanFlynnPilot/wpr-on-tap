@@ -12,6 +12,9 @@ const draftMode = /draft/i.test(file);
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const FOOD = new Set(["kitchen", "food_trucks", "none"]);
+const TYPE = new Set(["brewery", "distillery"]);
+// The nine-county coverage spread: the Cleanup Ledger's eight plus Adams (Up North).
+const COUNTY = new Set(["Marathon", "Langlade", "Lincoln", "Oneida", "Portage", "Shawano", "Taylor", "Wood", "Adams"]);
 const SRM = new Set(["pale", "amber", "brown", "stout"]);
 const TIER = new Set(["free", "featured"]);
 const BOOLS = ["outdoor", "dogFriendly", "familyFriendly", "tours", "liveMusic"];
@@ -50,6 +53,8 @@ for (const b of data.breweries || []) {
     if (typeof b[k] !== "string" || !b[k].trim()) err(at(`"${k}" must be a non-empty string`));
   }
   if (!TIER.has(b.tier)) err(at(`tier must be free|featured, got ${JSON.stringify(b.tier)}`));
+  if (!TYPE.has(b.type)) err(at(`type must be brewery|distillery, got ${JSON.stringify(b.type)}`));
+  if (b.county && !COUNTY.has(b.county)) err(at(`county ${JSON.stringify(b.county)} outside the nine-county spread`));
   if (typeof b.address !== "string" || !b.address.trim() || b.address === "TODO") soft(at(`address is missing/TODO`));
 
   for (const [k, [lo, hi]] of [["lat", LAT], ["lng", LNG]]) {

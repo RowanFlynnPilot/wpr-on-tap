@@ -43,11 +43,11 @@ Coverage target expanded to match the Cleanup Ledger's eight counties: **Maratho
 ### County scorecard after expansion
 Marathon 4–5 breweries + 2 distilleries · Portage 4 + 1 · Oneida up to 3 + 1 · Wood 1 · Shawano 1 · Taylor 1 · Lincoln 1 (Tomahawk checked: none) · **Langlade 0** — checked thoroughly; Antigo has no brewery or distillery. That absence is itself a story hook ("the one county you can't drink local in").
 
-### Decisions this creates
-- [ ] **Schema: add `type: "brewery" | "distillery"`** + a UI treatment (a "Distilleries" filter chip is the minimal version). Flagship chips work for spirits too (list core spirits; srm tones map loosely to spirit color). One JSON file stays.
-- [ ] **Up North is now outside the spread** — Adams County isn't one of the ledger's eight. Options: drop it, or keep as an explicit "just over the county line" exception (its mailing address is Nekoosa/Wood). Decide alongside the Wood coverage question.
-- [ ] Brews-on-site verification for Rhinelander + Minocqua (phone calls), like Little Italy.
-- [ ] Naming: "On Tap" still reads fine with distilleries; dek/eyebrow should say "breweries & distilleries" once they land.
+### Decisions — resolved 2026-08-28
+- [x] **Schema: `type: "brewery" | "distillery"` added** to every entry; validator enforces the enum. UI: All/Breweries/Distilleries type toggle (single-select, URL param `?type=`), brown 🥃 map pins, "Distillery ·" prefix on card/modal meta.
+- [x] **Adams County added to the spread** (decision: keep Up North). Coverage is now nine counties — the ledger's eight plus Adams; validator enforces the county list.
+- [x] **All 8 clean finds integrated into the draft** with geocoded coordinates (Knowlton House via its OSM POI; Timekeeper matched the depot itself). Remaining collection: Northern Waters hours (all TODO — site doesn't publish; call 715-358-0172), Rocky Reef hours used own site (Mon–Sat 12–9, Sun 12–5 — a directory site claims longer evening hours, verify), Blue Heron/Lake 11 amenity attributes are conservative defaults.
+- [ ] Brews-on-site verification for Rhinelander + Minocqua (phone calls), like Little Italy — both still OUT of the draft pending that call.
 
 ## Attribute defaults needing eyes
 dogFriendly, familyFriendly, tours, and liveMusic were set conservatively (false unless a source affirmed). Every `false` is "unconfirmed," not "confirmed no" — except Bull Falls dogs (sign reported) and Red Eye/CW where sources were explicit. Worth a column-by-column pass.

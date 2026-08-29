@@ -1,6 +1,6 @@
 {
   "updated": "2026-08-28",
-  "_status": "DRAFT — automated collection 2026-08-28 + browser collection pass 2026-08-28 (Stoney Acres, District 1, O'so, Up North Sunday, Little Italy address). Review REVIEW.md before promoting to breweries.json",
+  "_status": "DRAFT — automated collection 2026-08-28 + browser collection pass 2026-08-28 (Stoney Acres, District 1, O'so, Up North Sunday, Little Italy address). Expansion pass 2026-08-28 added 4 breweries + 4 distilleries (type field). Review REVIEW.md before promoting to breweries.json",
   "breweries": [
     {
       "id": "bull-falls",
@@ -30,7 +30,8 @@
       "links": {
         "website": "https://bullfallsbrewingco.com"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "red-eye",
@@ -76,7 +77,8 @@
       "links": {
         "website": "https://redeyebrewing.com"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "mosinee-brewing",
@@ -117,7 +119,8 @@
       "links": {
         "website": "https://www.mosineebrewing.com"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "sawmill",
@@ -147,7 +150,8 @@
       "links": {
         "website": "https://sawmillbrewing.net"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "stoney-acres",
@@ -198,7 +202,8 @@
       "links": {
         "website": "https://stoneyacres.farm"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "central-waters",
@@ -254,7 +259,8 @@
       "links": {
         "website": "https://centralwaters.com"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "stevens-point-brewery",
@@ -305,7 +311,8 @@
       "links": {
         "website": "https://www.pointbeer.com"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "oso",
@@ -335,7 +342,8 @@
       "links": {
         "website": "https://www.osobrewing.com"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "district-1",
@@ -365,7 +373,8 @@
       "links": {
         "website": "https://district1brewing.com"
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "little-italy",
@@ -395,7 +404,8 @@
       "links": {
         "website": null
       },
-      "featured": null
+      "featured": null,
+      "type": "brewery"
     },
     {
       "id": "up-north",
@@ -424,6 +434,255 @@
       "flagships": [],
       "links": {
         "website": null
+      },
+      "featured": null,
+      "type": "brewery"
+    },
+    {
+      "id": "blue-heron",
+      "name": "Blue Heron BrewPub",
+      "type": "brewery",
+      "tier": "free",
+      "city": "Marshfield",
+      "county": "Wood",
+      "address": "108 W 9th St, Marshfield, WI 54449",
+      "lat": 44.65967,
+      "lng": -90.17922,
+      "hours": {
+        "mon": null,
+        "tue": "3–9:30",
+        "wed": "3–9:30",
+        "thu": "3–9:30",
+        "fri": "3–9:30",
+        "sat": "3–9:30",
+        "sun": null
+      },
+      "food": "kitchen",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": true,
+      "tours": false,
+      "liveMusic": false,
+      "flagships": [],
+      "links": {
+        "website": "https://blueheronbrewpub.com"
+      },
+      "featured": null
+    },
+    {
+      "id": "stubborn-brothers",
+      "name": "Stubborn Brothers Brewery",
+      "type": "brewery",
+      "tier": "free",
+      "city": "Shawano",
+      "county": "Shawano",
+      "address": "220 S Main St, Shawano, WI 54166",
+      "lat": 44.77945,
+      "lng": -88.60917,
+      "hours": {
+        "mon": "11–8",
+        "tue": "11–8",
+        "wed": "11–9",
+        "thu": "11–9",
+        "fri": "11–10",
+        "sat": "11–10",
+        "sun": "11–8"
+      },
+      "food": "kitchen",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": true,
+      "tours": true,
+      "liveMusic": false,
+      "flagships": [],
+      "links": {
+        "website": "https://www.stubbornbros.com"
+      },
+      "featured": null
+    },
+    {
+      "id": "lake-11",
+      "name": "Lake 11 Brewing",
+      "type": "brewery",
+      "tier": "free",
+      "city": "Medford",
+      "county": "Taylor",
+      "address": "128 S Main St, Medford, WI 54451",
+      "lat": 45.13832,
+      "lng": -90.34508,
+      "hours": {
+        "mon": null,
+        "tue": null,
+        "wed": "4–10",
+        "thu": "4–10",
+        "fri": "4–10",
+        "sat": "3–10",
+        "sun": "11–6"
+      },
+      "food": "none",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": false,
+      "tours": false,
+      "liveMusic": false,
+      "flagships": [],
+      "links": {
+        "website": "https://www.lake11brewing.com"
+      },
+      "featured": null
+    },
+    {
+      "id": "rocky-reef",
+      "name": "Rocky Reef Brewing Company",
+      "type": "brewery",
+      "tier": "free",
+      "city": "Woodruff",
+      "county": "Oneida",
+      "address": "1101 1st Ave, Woodruff, WI 54568",
+      "lat": 45.89613,
+      "lng": -89.69623,
+      "hours": {
+        "mon": "12–9",
+        "tue": "12–9",
+        "wed": "12–9",
+        "thu": "12–9",
+        "fri": "12–9",
+        "sat": "12–9",
+        "sun": "12–5"
+      },
+      "food": "none",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": false,
+      "tours": false,
+      "liveMusic": true,
+      "flagships": [],
+      "links": {
+        "website": "https://www.rockyreefbrewing.com"
+      },
+      "featured": null
+    },
+    {
+      "id": "timekeeper",
+      "name": "Timekeeper Distillery",
+      "type": "distillery",
+      "tier": "free",
+      "city": "Wausau",
+      "county": "Marathon",
+      "address": "720 Grant St, Wausau, WI 54403",
+      "lat": 44.96189,
+      "lng": -89.61993,
+      "hours": {
+        "mon": null,
+        "tue": null,
+        "wed": "4–10",
+        "thu": "4–10",
+        "fri": "4–11",
+        "sat": "2–11",
+        "sun": "1–7"
+      },
+      "food": "kitchen",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": false,
+      "tours": false,
+      "liveMusic": false,
+      "flagships": [],
+      "links": {
+        "website": "https://www.timekeeperdistillery.com"
+      },
+      "featured": null
+    },
+    {
+      "id": "knowlton-house",
+      "name": "Knowlton House Distillery",
+      "type": "distillery",
+      "tier": "free",
+      "city": "Knowlton",
+      "county": "Marathon",
+      "address": "204575 County Rd DB, Mosinee, WI 54455",
+      "lat": 44.72526,
+      "lng": -89.68103,
+      "hours": {
+        "mon": "11–5",
+        "tue": "11–5",
+        "wed": "11–5",
+        "thu": "11–9",
+        "fri": "11–9",
+        "sat": "11–9",
+        "sun": "9–5"
+      },
+      "food": "kitchen",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": true,
+      "tours": false,
+      "liveMusic": false,
+      "flagships": [],
+      "links": {
+        "website": "https://knowltonhouse.com"
+      },
+      "featured": null
+    },
+    {
+      "id": "great-northern",
+      "name": "Great Northern Distilling",
+      "type": "distillery",
+      "tier": "free",
+      "city": "Stevens Point",
+      "county": "Portage",
+      "address": "1011 Second St, Stevens Point, WI 54481",
+      "lat": 44.52609,
+      "lng": -89.58564,
+      "hours": {
+        "mon": "4–10",
+        "tue": "4–11",
+        "wed": "4–11",
+        "thu": "4–11",
+        "fri": "4–12",
+        "sat": "12–12",
+        "sun": null
+      },
+      "food": "none",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": false,
+      "tours": true,
+      "liveMusic": false,
+      "flagships": [],
+      "links": {
+        "website": "https://www.greatnortherndistilling.com"
+      },
+      "featured": null
+    },
+    {
+      "id": "northern-waters",
+      "name": "Northern Waters Distillery",
+      "type": "distillery",
+      "tier": "free",
+      "city": "Minocqua",
+      "county": "Oneida",
+      "address": "8136 US Highway 51 S, Minocqua, WI 54548",
+      "lat": 45.85821,
+      "lng": -89.70561,
+      "hours": {
+        "mon": "TODO",
+        "tue": "TODO",
+        "wed": "TODO",
+        "thu": "TODO",
+        "fri": "TODO",
+        "sat": "TODO",
+        "sun": "TODO"
+      },
+      "food": "none",
+      "outdoor": false,
+      "dogFriendly": false,
+      "familyFriendly": false,
+      "tours": true,
+      "liveMusic": false,
+      "flagships": [],
+      "links": {
+        "website": "https://northernwatersdistillery.com"
       },
       "featured": null
     }

@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Central Wisconsin On Tap — Wausau Pilot &amp; Review</title>
-<meta name="description" content="Every brewery worth the drive in central Wisconsin — taprooms, hours, flagships, food trucks, and what's happening this week. From Wausau Pilot & Review.">
+<meta name="description" content="Every brewery and distillery worth the drive in central Wisconsin — taprooms, tasting rooms, hours, flagships, and what's happening this week. From Wausau Pilot & Review.">
 <meta property="og:title" content="Central Wisconsin On Tap">
-<meta property="og:description" content="Every brewery worth the drive, from Merrill to Amherst. Taprooms, flagships, food trucks, and what's happening this week.">
+<meta property="og:description" content="Every brewery and distillery worth the drive, from Medford to Minocqua. Taprooms, tasting rooms, flagships, and what's happening this week.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Wausau Pilot &amp; Review">
 <link rel="icon" href="https://wausaupilotandreview.com/wp-content/uploads/2024/04/cropped-Wausau-Pilot-Transparent-192x192.png">
@@ -234,6 +234,12 @@
     background: var(--teal);
     border-color: var(--teal);
     color: #fff;
+  }
+  .type-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--line);
+    margin: 0 4px;
   }
   .filter-count {
     margin-left: auto;
@@ -544,6 +550,7 @@
     justify-content: center;
   }
   .pin span { transform: rotate(45deg); font-size: 14px; line-height: 1; }
+  .pin-distillery { background: var(--srm-brown); }
   .pin-featured { width: 38px; height: 38px; background: var(--teal); }
   .pin-featured span { font-size: 18px; }
   .cluster {
@@ -630,7 +637,7 @@
         <rect x="13.5" y="24" width="8" height="14" rx="4"/>
       </g>
     </svg></h1>
-    <p class="dek">Every brewery worth the drive, from Merrill to Amherst. Taprooms, flagships, food trucks, and what's happening this week.</p>
+    <p class="dek">Every brewery and distillery worth the drive, from Medford to Minocqua. Taprooms, tasting rooms, flagships, food trucks, and what's happening this week.</p>
     <p class="updated-line">Listings updated <span id="updated"></span></p>
     <div class="presented">
       <span class="pb-label">Presented by</span>
@@ -644,8 +651,12 @@
 <div class="wrap">
   <div id="banner"></div>
 
-  <div class="filters" role="group" aria-label="Filter breweries">
-    <button class="chip" data-filter="openNow" aria-pressed="false">🍺 Open now</button>
+  <div class="filters" role="group" aria-label="Filter breweries and distilleries">
+    <button class="chip type-chip" data-type="all" aria-pressed="true">All</button>
+    <button class="chip type-chip" data-type="brewery" aria-pressed="false">🍺 Breweries</button>
+    <button class="chip type-chip" data-type="distillery" aria-pressed="false">🥃 Distilleries</button>
+    <span class="type-divider" aria-hidden="true"></span>
+    <button class="chip" data-filter="openNow" aria-pressed="false">🕐 Open now</button>
     <button class="chip" data-filter="food" aria-pressed="false">🍕 Serves food</button>
     <button class="chip" data-filter="outdoor" aria-pressed="false">☀️ Outdoor seating</button>
     <button class="chip" data-filter="dogFriendly" aria-pressed="false">🐶 Dog-friendly</button>
@@ -655,7 +666,7 @@
     <span class="filter-count" id="count" aria-live="polite"></span>
   </div>
 
-  <div id="map" aria-label="Map of central Wisconsin breweries"></div>
+  <div id="map" aria-label="Map of central Wisconsin breweries and distilleries"></div>
 
   <p class="section-label" id="list-label"></p>
   <div class="grid" id="grid"><p class="empty">Loading breweries…</p></div>
@@ -669,7 +680,7 @@
       <img src="wpr-typewriter-badge.png" alt="">
       <span><a href="https://wausaupilotandreview.com/" target="_blank" rel="noopener">Wausau Pilot &amp; Review</a> · Where Locals Look First For News</span>
     </div>
-    Listings are editorial and comprehensive — every brewery in our coverage area is included, free of charge. Featured placements are paid sponsorships and are labeled. Know a brewery we missed? <a href="mailto:editor@wausaupilotandreview.com" style="color:var(--teal-dark)">Tell us.</a>
+    Listings are editorial and comprehensive — every brewery and distillery in our coverage area is included, free of charge. Featured placements are paid sponsorships and are labeled. Know a brewery we missed? <a href="mailto:editor@wausaupilotandreview.com" style="color:var(--teal-dark)">Tell us.</a>
   </footer>
 </div>
 
@@ -682,6 +693,9 @@ const esc = s => String(s).replace(/[&<>"']/g, c =>
 
 let DATA = null;
 const activeFilters = new Set();
+let activeType = "all"; // all | brewery | distillery
+
+const vType = b => b.type || "brewery";
 
 // "3–10" / "11–11" / "4–8:30" → [open, close] as 24h decimal hours, or null if unparseable.
 // Taproom convention: opening hours of 9–12 read as morning/noon, 1–8 as afternoon; closes are always pm.
@@ -717,6 +731,7 @@ function openNow(b) {
 }
 
 function matches(b) {
+  if (activeType !== "all" && vType(b) !== activeType) return false;
   for (const f of activeFilters) {
     if (f === "food") { if (b.food === "none") return false; }
     else if (f === "openNow") { if (!openNow(b)) return false; }
@@ -750,7 +765,7 @@ function cardHTML(b) {
         `<span class="taster" style="--pour:${SRM[f.srm] || SRM.amber}">${esc(f.name)}</span>`).join("")}</div>`
     : "";
   const tagHTML = tags(b).map(t => `<span class="tag">${t}</span>`).join("");
-  const meta = `${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}`;
+  const meta = `${vType(b) === "distillery" ? "Distillery · " : ""}${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}`;
 
   if (b.tier === "featured") {
     const ev = (b.featured.events || []).map(e =>
@@ -852,7 +867,8 @@ function popupHTML(b) {
 function singleMarker(b) {
   const el = document.createElement("div");
   el.className = "pin-wrap";
-  el.innerHTML = `<div class="pin${b.tier === "featured" ? " pin-featured" : ""}"><span>🍺</span></div>`;
+  const dist = vType(b) === "distillery";
+  el.innerHTML = `<div class="pin${b.tier === "featured" ? " pin-featured" : ""}${dist ? " pin-distillery" : ""}"><span>${dist ? "🥃" : "🍺"}</span></div>`;
   const m = new maplibregl.Marker({ element: el, anchor: "bottom" })
     .setLngLat([b.lng, b.lat])
     .setPopup(new maplibregl.Popup({ offset: 32, closeButton: false }).setHTML(popupHTML(b)))
@@ -913,7 +929,9 @@ function render() {
 
   document.getElementById("count").textContent = `${visible.length} of ${DATA.breweries.length}`;
   document.getElementById("list-label").textContent =
-    activeFilters.size ? "Filtered results" : "All breweries";
+    (activeFilters.size || activeType !== "all")
+      ? "Filtered results"
+      : "All breweries & distilleries";
 
   mapList = visible.filter(b => b.lat != null && b.lng != null);
   lastBounds = mapList.length
@@ -924,7 +942,12 @@ function render() {
 }
 
 // ---- Deep links: ?f=dogFriendly,outdoor&brewery=bull-falls ----
-const VALID_FILTERS = new Set([...document.querySelectorAll(".chip")].map(c => c.dataset.filter));
+const VALID_FILTERS = new Set([...document.querySelectorAll(".chip[data-filter]")].map(c => c.dataset.filter));
+
+function setTypeChips() {
+  document.querySelectorAll(".type-chip").forEach(c =>
+    c.setAttribute("aria-pressed", String(c.dataset.type === activeType)));
+}
 
 function applyURLState() {
   const params = new URLSearchParams(location.search);
@@ -934,12 +957,16 @@ function applyURLState() {
       document.querySelector(`.chip[data-filter="${f}"]`).setAttribute("aria-pressed", "true");
     }
   }
+  const t = params.get("type");
+  if (t === "brewery" || t === "distillery") { activeType = t; setTypeChips(); }
 }
 
 function syncURL() {
   const params = new URLSearchParams(location.search);
   if (activeFilters.size) params.set("f", [...activeFilters].join(","));
   else params.delete("f");
+  if (activeType !== "all") params.set("type", activeType);
+  else params.delete("type");
   const q = params.toString();
   history.replaceState(null, "", q ? `?${q}` : location.pathname);
 }
@@ -992,7 +1019,7 @@ function openModal(b) {
   document.getElementById("modal").innerHTML = `
     <button class="modal-close" type="button" aria-label="Close">✕</button>
     <h3>${esc(b.name)}</h3>
-    <p class="meta">${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}</p>
+    <p class="meta">${vType(b) === "distillery" ? "Distillery · " : ""}${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}</p>
     <p class="addr">${esc(b.address)}</p>
     ${flight}
     <div class="tags">${tagHTML}</div>
@@ -1043,12 +1070,21 @@ grid.addEventListener("keydown", e => {
   }
 });
 
-document.querySelectorAll(".chip").forEach(chip => {
+document.querySelectorAll(".chip[data-filter]").forEach(chip => {
   chip.addEventListener("click", () => {
     const f = chip.dataset.filter;
     const on = activeFilters.has(f);
     if (on) activeFilters.delete(f); else activeFilters.add(f);
     chip.setAttribute("aria-pressed", String(!on));
+    syncURL();
+    render();
+  });
+});
+
+document.querySelectorAll(".type-chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    activeType = chip.dataset.type;
+    setTypeChips();
     syncURL();
     render();
   });
