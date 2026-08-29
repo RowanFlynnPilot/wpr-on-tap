@@ -84,6 +84,13 @@ for (const b of data.breweries || []) {
     if (!SRM.has(f.srm)) err(at(`flagship "${f && f.name}" srm must be pale|amber|brown|stout`));
   }
 
+  // photo is optional: absent/null = no photo; otherwise https URL or a repo-relative img/ path.
+  // Only add photos we have written permission for (or WPR-owned shots) — see REVIEW.md.
+  if ("photo" in b && b.photo !== null &&
+      !(typeof b.photo === "string" && (/^https:\/\/\S+$/.test(b.photo) || /^img\/[\w.-]+$/.test(b.photo)))) {
+    err(at(`photo must be null, an https URL, or img/<file>`));
+  }
+
   if (!b.links || typeof b.links !== "object") err(at(`links object missing`));
   else {
     if (b.links.website != null && !/^https:\/\//.test(b.links.website)) err(at(`links.website must be https URL or null`));

@@ -457,6 +457,15 @@
   }
   .modal-close:hover { border-color: var(--teal); color: var(--teal-dark); }
   .modal-close:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .modal-photo {
+    display: block;
+    width: calc(100% + 48px);
+    margin: -24px -24px 16px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 14px 14px 0 0;
+    background: var(--cream);
+  }
   .modal h3 {
     font-family: 'Fraunces', serif;
     font-weight: 700;
@@ -1081,6 +1090,7 @@ function openModal(b) {
   ].join("");
 
   document.getElementById("modal").innerHTML = `
+    ${b.photo ? `<img class="modal-photo" src="${esc(b.photo)}" alt="${esc(b.name)}">` : ""}
     <button class="modal-close" type="button" aria-label="Close">✕</button>
     <h3>${esc(b.name)}</h3>
     <p class="meta">${vType(b) === "distillery" ? "Distillery · " : ""}${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}</p>

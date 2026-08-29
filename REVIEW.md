@@ -55,6 +55,17 @@ Marathon 4–5 breweries + 2 distilleries · Portage 4 + 1 · Oneida up to 3 + 1
 - O'so **does** run Saturday tours per the Stevens Point Area CVB's Craft Collective page — draft flipped tours→true.
 - Cross-checked: the CVB's official Craft Collective roster (Central Waters, District 1, Great Northern, O'so, Point) is fully covered; Adams County has only Up North; Langlade still zero (Woodland Trail Beverage is a *winery* in Lakewood, Oconto Co.); no distilleries around Rhinelander/Tomahawk beyond ours; no breweries in Weston/Schofield/Rothschild.
 
+## Photos & logos — permissions required before anything ships
+Policy: **no scraping images from venue websites.** They're copyrighted, and this repo is public — committing an image IS publishing it, ahead of any editorial review. The tool now supports an optional per-venue `photo` field (shown in the detail modal only, so featured cards keep their visual edge); images get added one at a time as permissions land, stored in `img/<slug>.jpg`.
+
+Best sources, in order:
+1. **WPR's own archive** — the newsroom has shot Bull Falls, Red Eye, and others for past coverage. Staff photos need no permission at all. Check first.
+2. **Venue-provided** — fold this ask into the verification calls already on this list. One line does it: *"We're launching a free brewery & distillery guide — every venue in the region is listed at no charge. Can you email us a photo of the taproom and your logo to run with your listing?"* Log the reply (who/when) below.
+3. Featured-tier sponsors supply photos as part of the package (already designed — `featured.photo`).
+
+Permission log (venue · what we got · from whom · date):
+- [ ] (none yet)
+
 ## Attribute defaults needing eyes
 dogFriendly, familyFriendly, tours, and liveMusic were set conservatively (false unless a source affirmed). Every `false` is "unconfirmed," not "confirmed no" — except Bull Falls dogs (sign reported) and Red Eye/CW where sources were explicit. Worth a column-by-column pass.
 
