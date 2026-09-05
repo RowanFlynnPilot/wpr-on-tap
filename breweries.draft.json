@@ -203,7 +203,11 @@
         "website": "https://stoneyacres.farm"
       },
       "featured": null,
-      "type": "brewery"
+      "type": "brewery",
+      "season": {
+        "from": "04-10",
+        "to": "11-14"
+      }
     },
     {
       "id": "central-waters",

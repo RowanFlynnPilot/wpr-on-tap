@@ -236,7 +236,7 @@
   }
   .chip:hover { border-color: var(--teal); color: var(--teal-dark); }
   .chip:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
-  .chip[aria-pressed="true"] {
+  .chip[aria-pressed="true"], .chip[aria-checked="true"] {
     background: var(--teal);
     border-color: var(--teal);
     color: #fff;
@@ -705,9 +705,11 @@
   <div id="banner"></div>
 
   <div class="filters" role="group" aria-label="Filter breweries and distilleries">
-    <button class="chip type-chip" data-type="all" aria-pressed="true">All</button>
-    <button class="chip type-chip" data-type="brewery" aria-pressed="false">🍺 Breweries</button>
-    <button class="chip type-chip" data-type="distillery" aria-pressed="false">🥃 Distilleries</button>
+    <span role="radiogroup" aria-label="Venue type" style="display:contents">
+      <button class="chip type-chip" role="radio" data-type="all" aria-checked="true">All</button>
+      <button class="chip type-chip" role="radio" data-type="brewery" aria-checked="false">🍺 Breweries</button>
+      <button class="chip type-chip" role="radio" data-type="distillery" aria-checked="false">🥃 Distilleries</button>
+    </span>
     <span class="type-divider" aria-hidden="true"></span>
     <button class="chip" data-filter="openNow" aria-pressed="false">🕐 Open now</button>
     <button class="chip" data-filter="food" aria-pressed="false">🍕 Serves food</button>
@@ -750,28 +752,62 @@ let activeType = "all"; // all | brewery | distillery
 
 const vType = b => b.type || "brewery";
 
+// Analytics hook. No-op until a provider is installed; adding Plausible's one
+// <script> tag turns every call into a goal event (the sponsor report data).
+function track(name, props) {
+  if (typeof window.plausible === "function") window.plausible(name, props ? { props } : undefined);
+}
+const seenFeatured = new Set();
+
+// Outbound clicks + sponsor CTA, wherever they live (cards, modal, map popups).
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[href]");
+  if (!a) return;
+  if (a.classList.contains("cta")) { track("Sponsor CTA"); return; }
+  if (a.target === "_blank" && /^https?:/.test(a.href)) {
+    const card = a.closest("[data-id]");
+    track("Outbound", { venue: card ? card.dataset.id : (modalVenueId || "site"), link: a.textContent.trim() });
+  }
+});
+
 // "3–10" / "11–11" / "4–8:30" → [open, close] as 24h decimal hours, or null if unparseable.
 // Taproom convention: opening hours of 9–12 read as morning/noon, 1–8 as afternoon; closes are always pm.
 function parseRange(str) {
   const m = /^(\d{1,2})(?::(\d{2}))?–(\d{1,2})(?::(\d{2}))?$/.exec(str);
   if (!m) return null;
   let open = +m[1] + (+m[2] || 0) / 60;
-  const close = +m[3] + (+m[4] || 0) / 60 + 12;
+  let close = +m[3] + (+m[4] || 0) / 60 + 12;
   if (+m[1] <= 8) open += 12;
+  if (close <= open) close += 12; // "8–1" closes at 1 a.m., not 1 p.m.
   return [open, close];
 }
 
-function hoursToday(b) {
-  return b.hours[DAYS[(new Date().getDay() + 6) % 7]];
+// Optional season {from:"MM-DD", to:"MM-DD"}, inclusive, may wrap the year end.
+function inSeason(b, d = new Date()) {
+  if (!b.season) return true;
+  const md = `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const { from, to } = b.season;
+  return from <= to ? (md >= from && md <= to) : (md >= from || md <= to);
+}
+
+function fmtMD(md) {
+  const [m, d] = md.split("-").map(Number);
+  return new Date(2000, m - 1, d).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+}
+
+function hoursToday(b, d = new Date()) {
+  if (!inSeason(b, d)) return null;
+  return b.hours[DAYS[(d.getDay() + 6) % 7]];
 }
 
 // Status dot + line: green = pouring right now, gold = opens later today, gray = closed/unknown.
 function todayLine(b) {
+  if (!inSeason(b)) return `<span class="dot"></span>Closed for the season`;
   const t = hoursToday(b);
   if (t === null) return `<span class="dot"></span>Closed today`;
   if (!parseRange(t)) return `<span class="dot"></span>Hours TBD`;
-  if (openNow(b)) return `<span class="dot open"></span>Open now · til ${t.split("–")[1]}`;
-  return `<span class="dot later"></span>Today ${t}`;
+  if (openNow(b)) return `<span class="dot open"></span>Open now · til ${esc(t.split("–")[1])}`;
+  return `<span class="dot later"></span>Today ${esc(t)}`;
 }
 
 function openNow(b) {
@@ -975,6 +1011,7 @@ function renderMarkers() {
   }
 }
 map.on("zoomend", renderMarkers);
+map.on("resize", () => { if (DATA) renderMarkers(); }); // orientation change re-clusters
 
 function fitMap() {
   map.resize();
@@ -1001,6 +1038,9 @@ function render() {
     : `<p class="empty"><span style="font-size:34px;display:block;margin-bottom:8px">🍻</span>No breweries match those filters. Clear one to widen the search.</p>`;
 
   document.getElementById("count").textContent = `${visible.length} of ${DATA.breweries.length}`;
+  for (const b of visible) {
+    if (b.tier === "featured" && !seenFeatured.has(b.id)) { seenFeatured.add(b.id); track("Featured impression", { venue: b.id }); }
+  }
   document.getElementById("list-label").textContent =
     (activeFilters.size || activeType !== "all")
       ? "Filtered results"
@@ -1019,7 +1059,7 @@ const VALID_FILTERS = new Set([...document.querySelectorAll(".chip[data-filter]"
 
 function setTypeChips() {
   document.querySelectorAll(".type-chip").forEach(c =>
-    c.setAttribute("aria-pressed", String(c.dataset.type === activeType)));
+    c.setAttribute("aria-checked", String(c.dataset.type === activeType)));
 }
 
 function applyURLState() {
@@ -1068,6 +1108,7 @@ function flyToBrewery(id) {
 // ---- Brewery detail modal ----
 const DAY_LABELS = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" };
 let modalReturnFocus = null;
+let modalVenueId = null;
 
 function openModal(b) {
   const todayKey = DAYS[(new Date().getDay() + 6) % 7];
@@ -1095,10 +1136,13 @@ function openModal(b) {
     <h3>${esc(b.name)}</h3>
     <p class="meta">${vType(b) === "distillery" ? "Distillery · " : ""}${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}</p>
     <p class="addr">${esc(b.address)}</p>
+    ${b.season ? `<p class="addr">Seasonal · open ${fmtMD(b.season.from)} through ${fmtMD(b.season.to)}</p>` : ""}
     ${flight}
     <div class="tags">${tagHTML}</div>
     <div class="hours-week">${week}</div>
     <div class="actions">${actions}</div>`;
+  modalVenueId = b.id;
+  track("Details", { venue: b.id });
   modalReturnFocus = document.activeElement;
   const bd = document.getElementById("modal-backdrop");
   bd.hidden = false;
@@ -1160,6 +1204,7 @@ document.querySelectorAll(".chip[data-filter]").forEach(chip => {
     const on = activeFilters.has(f);
     if (on) activeFilters.delete(f); else activeFilters.add(f);
     chip.setAttribute("aria-pressed", String(!on));
+    if (!on) track("Filter", { filter: f });
     syncURL();
     render();
   });
@@ -1169,6 +1214,7 @@ document.querySelectorAll(".type-chip").forEach(chip => {
   chip.addEventListener("click", () => {
     activeType = chip.dataset.type;
     setTypeChips();
+    track("Type", { type: activeType });
     syncURL();
     render();
   });
@@ -1186,10 +1232,12 @@ if (window.parent !== window) {
 
 // ---- Load: breweries.json (validated) → breweries.draft.json (preview) → error ----
 async function load() {
-  let res = await fetch("breweries.json").catch(() => null);
+  // no-cache = revalidate with the server each load, so a promotion or a
+  // quarterly refresh shows up without readers clearing anything.
+  let res = await fetch("breweries.json", { cache: "no-cache" }).catch(() => null);
   let draft = false;
   if (!res || !res.ok) {
-    res = await fetch("breweries.draft.json").catch(() => null);
+    res = await fetch("breweries.draft.json", { cache: "no-cache" }).catch(() => null);
     draft = true;
   }
   if (!res || !res.ok) throw new Error("No data file reachable");
@@ -1203,10 +1251,26 @@ async function load() {
     }
   }
 
-  if (draft) {
-    document.getElementById("banner").innerHTML =
-      `<p class="draft-banner">🚧 Preview — draft data, not yet verified by the newsroom. Hours and details may be wrong.</p>`;
+  const banners = [];
+  if (draft) banners.push(`<p class="draft-banner">🚧 Preview — draft data, not yet verified by the newsroom. Hours and details may be wrong.</p>`);
+
+  // Sales mock-up: ?preview=featured&brewery=<slug> renders that venue as a
+  // featured placement (client-side only, nothing in the data changes).
+  const params = new URLSearchParams(location.search);
+  if (params.get("preview") === "featured") {
+    const b = DATA.breweries.find(x => x.id === params.get("brewery"));
+    if (b) {
+      const sat = new Date(); sat.setDate(sat.getDate() + ((6 - sat.getDay() + 7) % 7 || 7));
+      b.tier = "featured";
+      b.featured = {
+        photo: null,
+        blurb: "Sample sponsor copy — two or three approved sentences about the taproom, the barrel program, the patio, whatever you want readers to know first.",
+        events: [{ date: sat.toISOString().slice(0, 10), title: "Sample event — your next release party or live music night" }]
+      };
+      banners.push(`<p class="draft-banner">🎟️ Sponsor preview — ${esc(b.name)} is shown as a featured placement for illustration only.</p>`);
+    }
   }
+  document.getElementById("banner").innerHTML = banners.join("");
 
   document.getElementById("updated").textContent =
     new Date(DATA.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });

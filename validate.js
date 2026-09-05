@@ -84,6 +84,14 @@ for (const b of data.breweries || []) {
     if (!SRM.has(f.srm)) err(at(`flagship "${f && f.name}" srm must be pale|amber|brown|stout`));
   }
 
+  // season is optional: null/absent = year-round; else {from, to} as MM-DD (inclusive, may wrap the year).
+  if ("season" in b && b.season !== null) {
+    const s = b.season;
+    if (!s || typeof s !== "object" || !/^\d{2}-\d{2}$/.test(s.from || "") || !/^\d{2}-\d{2}$/.test(s.to || "")) {
+      err(at(`season must be null or {from:"MM-DD", to:"MM-DD"}`));
+    }
+  }
+
   // photo is optional: absent/null = no photo; otherwise https URL or a repo-relative img/ path.
   // Only add photos we have written permission for (or WPR-owned shots) — see REVIEW.md.
   if ("photo" in b && b.photo !== null &&

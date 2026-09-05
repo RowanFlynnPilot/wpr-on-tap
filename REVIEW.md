@@ -55,6 +55,12 @@ Marathon 4–5 breweries + 2 distilleries · Portage 4 + 1 · Oneida up to 3 + 1
 - O'so **does** run Saturday tours per the Stevens Point Area CVB's Craft Collective page — draft flipped tours→true.
 - Cross-checked: the CVB's official Craft Collective roster (Central Waters, District 1, Great Northern, O'so, Point) is fully covered; Adams County has only Up North; Langlade still zero (Woodland Trail Beverage is a *winery* in Lakewood, Oconto Co.); no distilleries around Rhinelander/Tomahawk beyond ours; no breweries in Weston/Schofield/Rothschild.
 
+## Robustness pass 2026-09-05
+- [ ] **Stoney Acres now carries `season: 04-10 → 11-14`** (from their site's dated copy) so winter Fridays read "Closed for the season" instead of "Open today". Confirm the 2026 dates on the verification call; Minocqua Brewing would need the same if it's ever added.
+- Hours parser now wraps past midnight ("8–1" = 1 a.m.); nothing in the data uses it yet, but the trap is closed.
+- Analytics instrumentation is in the page (`track()` stub: outbound clicks per venue, details opens, filter/type use, featured impressions, sponsor CTA). Adding Plausible's script tag turns it on. **Do this before the first sponsor pitch.**
+- `?preview=featured&brewery=<slug>` shows any venue as a featured placement, client-side only — the featured card path is now verified with real data.
+
 ## Photos & logos — permissions required before anything ships
 Policy: **no scraping images from venue websites.** They're copyrighted, and this repo is public — committing an image IS publishing it, ahead of any editorial review. The tool now supports an optional per-venue `photo` field (shown in the detail modal only, so featured cards keep their visual edge); images get added one at a time as permissions land, stored in `img/<slug>.jpg`.
 
