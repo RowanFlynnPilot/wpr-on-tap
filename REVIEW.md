@@ -61,6 +61,15 @@ Marathon 4–5 breweries + 2 distilleries · Portage 4 + 1 · Oneida up to 3 + 1
 - Analytics instrumentation is in the page (`track()` stub: outbound clicks per venue, details opens, filter/type use, featured impressions, sponsor CTA). Adding Plausible's script tag turns it on. **Do this before the first sponsor pitch.**
 - `?preview=featured&brewery=<slug>` shows any venue as a featured placement, client-side only — the featured card path is now verified with real data.
 
+## Federal permit cross-check 2026-09-05 (TTB spirits producers list, Apr 2025 edition)
+TTB publishes distilled-spirits plants but is barred (IRC §6103) from publishing brewers, so this is ground truth for spirits only. Filtered to the nine counties' cities — seven permits:
+- Great Northern, Northern Waters, Timekeeper (legal name Central Time Distillery and Winery), Knowlton House (Mullins Distillery LLC) — all four already listed ✓.
+- **Central Waters holds a DSP permit** as "Central Waters Brewing And Distilling" (340 Allen St). They make spirits now — story for the newsroom; schema-wise they stay `type: brewery`.
+- **Stevens Point Brewery (SPB LLC) holds a DSP permit** too — likely spirits-based RTDs; worth a question on the call.
+- **"Wild Bourbon" — Chris Jon Wildgrube, W5259 South Ct, Shawano (WI-S-20112).** Permit at what looks like a residential address; no website, no tasting room found anywhere. Not a listing. Possibly a story ("Shawano's one-man bourbon permit").
+- Contact scrape corrections: Rocky Reef's real phone is **715-439-4055** (a directory site had a 262 number); email rockyreefbrewing@gmail.com. **Bull Falls' website contact page is an unfinished template** (placeholder 1-800 numbers) — flag to them kindly; it's also the sales hook.
+- Sales material (contacts + individualized pitches) lives in `sales/` — **git-ignored, never commit** (named people, internal strategy).
+
 ## Photos & logos — permissions required before anything ships
 Policy: **no scraping images from venue websites.** They're copyrighted, and this repo is public — committing an image IS publishing it, ahead of any editorial review. The tool now supports an optional per-venue `photo` field (shown in the detail modal only, so featured cards keep their visual edge); images get added one at a time as permissions land, stored in `img/<slug>.jpg`.
 
