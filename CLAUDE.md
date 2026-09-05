@@ -14,7 +14,9 @@ enforces the county list.
   tiles with a hand-written WPR-palette style, teardrop pins (amber brewery,
   brown distillery, teal featured), manual clustering, legend. Type toggle +
   amenity chips, "Open now" via `parseRange`, detail modal (full week, photo
-  slot, Directions, Show on map), deep links (`?f=`, `?type=`, `?brewery=`),
+  slot, Directions, Show on map, Copy link), find row (name/town search,
+  county picker, "Near me" distance sort with miles on cards), deep links
+  (`?f=`, `?type=`, `?q=`, `?county=`, `?brewery=`),
   iframe height postMessage, OG card. Fetches `breweries.json` → falls back
   to `breweries.draft.json` behind a draft banner → error state.
   `?preview=featured&brewery=<slug>` renders a client-side featured mock-up

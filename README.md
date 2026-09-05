@@ -12,5 +12,5 @@ in `breweries.json` (hand-validated, refreshed quarterly) and is gated by
 `REVIEW.md` for the current validation state.
 
 Handy URLs:
-- `?type=distillery` · `?f=openNow,dogFriendly` · `?brewery=bull-falls` — deep links
+- `?type=distillery` · `?f=openNow,dogFriendly` · `?county=Oneida` · `?q=wausau` · `?brewery=bull-falls` — deep links
 - `?preview=featured&brewery=<slug>` — client-side featured mock-up for sales pitches

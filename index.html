@@ -18,6 +18,8 @@
 <link rel="icon" href="https://wausaupilotandreview.com/wp-content/uploads/2024/04/cropped-Wausau-Pilot-Transparent-192x192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/maplibre-gl/5.24.0/maplibre-gl.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://tiles.openfreemap.org">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -212,16 +214,50 @@
     margin-bottom: 18px;
   }
 
-  /* ---- Filters ---- */
+  /* ---- Find row + filters ---- */
+  .find {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 18px 0 0;
+    border-top: 1px solid var(--line);
+  }
+  .find input, .find select {
+    font-family: 'Public Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 14px;
+  }
+  .find input { flex: 1 1 220px; min-width: 0; }
+  .find input::placeholder { color: var(--ink-soft); }
+  .find input:focus-visible, .find select:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .find .dist-note {
+    align-self: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
   .filters {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    padding: 18px 0;
-    border-top: 1px solid var(--line);
+    padding: 14px 0 18px;
     border-bottom: 1px solid var(--line);
     margin-bottom: 24px;
   }
+  .card .dist {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--teal-dark);
+    background: rgba(58,134,124,0.10);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+  .card .links .details-link { color: var(--ink); }
   .chip {
     font-family: 'Public Sans', sans-serif;
     font-size: 14px;
@@ -564,7 +600,16 @@
     align-items: center;
     justify-content: center;
   }
+  .pin-wrap:hover .pin { transform: rotate(-45deg) scale(1.12); }
   .pin span { transform: rotate(45deg); font-size: 14px; line-height: 1; }
+  .you-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2E6FB0;
+    border: 3px solid #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(46, 111, 176, 0.25);
+  }
   .pin-distillery { background: var(--srm-brown); }
   .pin-featured { width: 38px; height: 38px; background: var(--teal); }
   .pin-featured span { font-size: 18px; }
@@ -704,6 +749,13 @@
 <div class="wrap">
   <div id="banner"></div>
 
+  <div class="find">
+    <input id="q" type="search" placeholder="Search by name or town…" aria-label="Search breweries and distilleries" autocomplete="off">
+    <select id="county" aria-label="County"><option value="">All counties</option></select>
+    <button class="chip" id="near" type="button" aria-pressed="false">📍 Near me</button>
+    <span class="dist-note" id="dist-note"></span>
+  </div>
+
   <div class="filters" role="group" aria-label="Filter breweries and distilleries">
     <span role="radiogroup" aria-label="Venue type" style="display:contents">
       <button class="chip type-chip" role="radio" data-type="all" aria-checked="true">All</button>
@@ -724,10 +776,10 @@
   <div id="map" aria-label="Map of central Wisconsin breweries and distilleries"></div>
 
   <p class="section-label" id="list-label"></p>
-  <div class="grid" id="grid"><p class="empty">Loading breweries…</p></div>
+  <div class="grid" id="grid"><p class="empty">Loading listings…</p></div>
 
   <div class="modal-backdrop" id="modal-backdrop" hidden>
-    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Brewery details"></div>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Venue details"></div>
   </div>
 
   <footer>
@@ -749,8 +801,20 @@ const esc = s => String(s).replace(/[&<>"']/g, c =>
 let DATA = null;
 const activeFilters = new Set();
 let activeType = "all"; // all | brewery | distillery
+let query = "";        // lowercased name/town search
+let county = "";       // "" = all
+let userPos = null;    // [lng, lat] once "Near me" is granted
+let nearMode = false;
 
 const vType = b => b.type || "brewery";
+
+function milesFrom(b) {
+  if (!userPos || b.lat == null) return null;
+  const p = Math.PI / 180, [lng, lat] = userPos;
+  const x = 0.5 - Math.cos((b.lat - lat) * p) / 2 +
+    Math.cos(lat * p) * Math.cos(b.lat * p) * (1 - Math.cos((b.lng - lng) * p)) / 2;
+  return 7917.5 * Math.asin(Math.sqrt(x));
+}
 
 // Analytics hook. No-op until a provider is installed; adding Plausible's one
 // <script> tag turns every call into a goal event (the sponsor report data).
@@ -821,6 +885,8 @@ function openNow(b) {
 
 function matches(b) {
   if (activeType !== "all" && vType(b) !== activeType) return false;
+  if (county && b.county !== county) return false;
+  if (query && !`${b.name} ${b.city}`.toLowerCase().includes(query)) return false;
   for (const f of activeFilters) {
     if (f === "food") { if (b.food === "none") return false; }
     else if (f === "openNow") { if (!openNow(b)) return false; }
@@ -842,7 +908,7 @@ function tags(b) {
 }
 
 function linksHTML(b) {
-  const out = [];
+  const out = [`<a href="#" class="details-link" data-details="${esc(b.id)}">Details →</a>`];
   if (b.links && b.links.website) out.push(`<a href="${esc(b.links.website)}" target="_blank" rel="noopener">Visit website →</a>`);
   if (b.links && b.links.untappdMenu) out.push(`<a href="${esc(b.links.untappdMenu)}" target="_blank" rel="noopener">Tap list →</a>`);
   return out.length ? `<div class="links">${out.join("")}</div>` : "";
@@ -854,7 +920,9 @@ function cardHTML(b) {
         `<span class="taster" style="--pour:${SRM[f.srm] || SRM.amber}">${esc(f.name)}</span>`).join("")}</div>`
     : "";
   const tagHTML = tags(b).map(t => `<span class="tag">${t}</span>`).join("");
-  const meta = `${vType(b) === "distillery" ? "Distillery · " : ""}${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}`;
+  const mi = nearMode ? milesFrom(b) : null;
+  const meta = `${vType(b) === "distillery" ? "Distillery · " : ""}${esc(b.city)}, ${esc(b.county)} County · ${todayLine(b)}` +
+    (mi != null ? `<span class="dist">${mi < 10 ? mi.toFixed(1) : Math.round(mi)} mi</span>` : "");
 
   if (b.tier === "featured") {
     const ev = (b.featured.events || []).map(e =>
@@ -1030,21 +1098,25 @@ new ResizeObserver(entries => {
 }).observe(document.getElementById("map"));
 
 function render() {
-  const visible = DATA.breweries.filter(matches)
-    .sort((a, b) => (a.tier === b.tier) ? a.name.localeCompare(b.name) : (a.tier === "featured" ? -1 : 1));
+  // Featured always leads; then by distance when "Near me" is on, else by name.
+  const visible = DATA.breweries.filter(matches).sort((a, b) => {
+    if (a.tier !== b.tier) return a.tier === "featured" ? -1 : 1;
+    if (nearMode && userPos) return (milesFrom(a) ?? 1e9) - (milesFrom(b) ?? 1e9);
+    return a.name.localeCompare(b.name);
+  });
 
   document.getElementById("grid").innerHTML = visible.length
     ? visible.map(cardHTML).join("")
-    : `<p class="empty"><span style="font-size:34px;display:block;margin-bottom:8px">🍻</span>No breweries match those filters. Clear one to widen the search.</p>`;
+    : `<p class="empty"><span style="font-size:34px;display:block;margin-bottom:8px">🍻</span>Nothing matches those filters. Clear one, or widen the search.</p>`;
 
   document.getElementById("count").textContent = `${visible.length} of ${DATA.breweries.length}`;
   for (const b of visible) {
     if (b.tier === "featured" && !seenFeatured.has(b.id)) { seenFeatured.add(b.id); track("Featured impression", { venue: b.id }); }
   }
   document.getElementById("list-label").textContent =
-    (activeFilters.size || activeType !== "all")
-      ? "Filtered results"
-      : "All breweries & distilleries";
+    nearMode ? "Nearest first"
+    : (activeFilters.size || activeType !== "all" || county || query) ? "Filtered results"
+    : "All breweries & distilleries";
 
   mapList = visible.filter(b => b.lat != null && b.lng != null);
   lastBounds = mapList.length
@@ -1072,17 +1144,71 @@ function applyURLState() {
   }
   const t = params.get("type");
   if (t === "brewery" || t === "distillery") { activeType = t; setTypeChips(); }
+  const q = (params.get("q") || "").trim();
+  if (q) { query = q.toLowerCase(); document.getElementById("q").value = q; }
+  const c = params.get("county") || "";
+  if ([...document.getElementById("county").options].some(o => o.value === c)) {
+    county = c; document.getElementById("county").value = c;
+  }
 }
 
 function syncURL() {
   const params = new URLSearchParams(location.search);
-  if (activeFilters.size) params.set("f", [...activeFilters].join(","));
-  else params.delete("f");
-  if (activeType !== "all") params.set("type", activeType);
-  else params.delete("type");
+  const setOrDrop = (k, v) => v ? params.set(k, v) : params.delete(k);
+  setOrDrop("f", activeFilters.size ? [...activeFilters].join(",") : "");
+  setOrDrop("type", activeType !== "all" ? activeType : "");
+  setOrDrop("q", document.getElementById("q").value.trim());
+  setOrDrop("county", county);
   const q = params.toString();
   history.replaceState(null, "", q ? `?${q}` : location.pathname);
 }
+
+// ---- Find row: search, county, near me ----
+let qTimer = null;
+document.getElementById("q").addEventListener("input", e => {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => {
+    query = e.target.value.trim().toLowerCase();
+    syncURL();
+    render();
+  }, 150);
+});
+document.getElementById("county").addEventListener("change", e => {
+  county = e.target.value;
+  track("County", { county: county || "all" });
+  syncURL();
+  render();
+});
+
+let youMarker = null;
+const nearBtn = document.getElementById("near");
+const distNote = document.getElementById("dist-note");
+nearBtn.addEventListener("click", () => {
+  if (nearMode) {
+    nearMode = false;
+    nearBtn.setAttribute("aria-pressed", "false");
+    distNote.textContent = "";
+    if (youMarker) { youMarker.remove(); youMarker = null; }
+    render();
+    return;
+  }
+  if (!navigator.geolocation) { distNote.textContent = "Location isn't available in this browser."; return; }
+  distNote.textContent = "Finding you…";
+  navigator.geolocation.getCurrentPosition(pos => {
+    userPos = [pos.coords.longitude, pos.coords.latitude];
+    nearMode = true;
+    nearBtn.setAttribute("aria-pressed", "true");
+    distNote.textContent = "Sorted by distance from you";
+    const el = document.createElement("div");
+    el.className = "you-dot";
+    el.title = "You are here";
+    youMarker = new maplibregl.Marker({ element: el }).setLngLat(userPos).addTo(map);
+    track("Near me");
+    render();
+  }, () => {
+    distNote.textContent = "Couldn't get your location — check the browser's permission.";
+  }, { timeout: 8000, maximumAge: 300000 });
+});
 
 function focusBrewery() {
   const id = new URLSearchParams(location.search).get("brewery");
@@ -1127,7 +1253,8 @@ function openModal(b) {
     b.links && b.links.website ? `<a class="primary" href="${esc(b.links.website)}" target="_blank" rel="noopener">Website</a>` : "",
     b.links && b.links.untappdMenu ? `<a class="secondary" href="${esc(b.links.untappdMenu)}" target="_blank" rel="noopener">Tap list</a>` : "",
     `<a class="secondary" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}" target="_blank" rel="noopener">Directions</a>`,
-    (b.lat != null) ? `<button class="secondary" type="button" data-map="${esc(b.id)}">Show on map</button>` : ""
+    (b.lat != null) ? `<button class="secondary" type="button" data-map="${esc(b.id)}">Show on map</button>` : "",
+    `<button class="secondary" type="button" data-copy="${esc(b.id)}">Copy link</button>`
   ].join("");
 
   document.getElementById("modal").innerHTML = `
@@ -1160,6 +1287,16 @@ function closeModal() {
 
 document.getElementById("modal-backdrop").addEventListener("click", e => {
   if (e.target.id === "modal-backdrop" || e.target.closest(".modal-close")) closeModal();
+  const copyBtn = e.target.closest("[data-copy]");
+  if (copyBtn) {
+    const url = `${location.origin}${location.pathname}?brewery=${encodeURIComponent(copyBtn.dataset.copy)}`;
+    navigator.clipboard.writeText(url).then(() => {
+      copyBtn.textContent = "Copied ✓";
+      track("Copy link", { venue: copyBtn.dataset.copy });
+      setTimeout(() => { copyBtn.textContent = "Copy link"; }, 1600);
+    }).catch(() => { copyBtn.textContent = url; });
+    return;
+  }
   const mapBtn = e.target.closest("[data-map]");
   if (mapBtn) {
     const id = mapBtn.dataset.map;
@@ -1184,7 +1321,9 @@ document.addEventListener("keydown", e => {
 
 const grid = document.getElementById("grid");
 function cardActivate(e) {
-  if (e.target.closest("a")) return;
+  const dl = e.target.closest("a[data-details]");
+  if (dl) e.preventDefault();
+  else if (e.target.closest("a")) return;
   const card = e.target.closest(".card");
   if (!card) return;
   const b = DATA && DATA.breweries.find(x => x.id === card.dataset.id);
@@ -1274,6 +1413,13 @@ async function load() {
 
   document.getElementById("updated").textContent =
     new Date(DATA.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  const sel = document.getElementById("county");
+  for (const c of [...new Set(DATA.breweries.map(b => b.county))].sort()) {
+    const o = document.createElement("option");
+    o.value = c; o.textContent = `${c} County`;
+    sel.appendChild(o);
+  }
 
   applyURLState();
   render();
